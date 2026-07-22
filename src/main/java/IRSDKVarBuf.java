@@ -20,7 +20,7 @@ public class IRSDKVarBuf {
     }
 
     public boolean[] getBooleans(int offset, int count) {
-        byte[] temp = memSnapshot.getByteArray(headerOffset + offset, count);
+        byte[] temp = memSnapshot.getByteArray(getBufOffset() + offset, count);
         boolean[] res = new boolean[count];
         for(int i = 0; i < count; i++) {
             res[i] = temp[i] == 1;
@@ -28,10 +28,10 @@ public class IRSDKVarBuf {
         return res;
     }
     public byte[] getBytes(int offset, int count) {
-        return memSnapshot.getByteArray(headerOffset + offset, count);
+        return memSnapshot.getByteArray(getBufOffset() + offset, count);
     }
     public char[] getChars(int offset, int count) {
-        byte[] temp = memSnapshot.getByteArray(headerOffset + offset, count);
+        byte[] temp = memSnapshot.getByteArray(getBufOffset() + offset, count);
         char[] res = new char[count];
         for(int i = 0; i < count; i++) {
             res[i] = (char)temp[i];
@@ -39,12 +39,12 @@ public class IRSDKVarBuf {
         return res;
     }
     public int[] getInts(int offset, int count) {
-        return memSnapshot.getIntArray(headerOffset + offset, count);
+        return memSnapshot.getIntArray(getBufOffset() + offset, count);
     }
     public float[] getFloats(int offset, int count) {
-        return memSnapshot.getFloatArray(headerOffset + offset, count);
+        return memSnapshot.getFloatArray(getBufOffset() + offset, count);
     }
     public double[] getDoubles(int offset, int count) {
-        return memSnapshot.getDoubleArray(headerOffset + offset, count);
+        return memSnapshot.getDoubleArray(getBufOffset() + offset, count);
     }
 }

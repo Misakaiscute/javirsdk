@@ -60,7 +60,7 @@ public class IRSDKHeader {
         h.sharedMem = buf;
 
         for(int i = 0; i < IRSDKDefines.IRSDK_MAX_BUFS; ++i) {
-            h.varBuf[i] = new IRSDKVarBuf(buf, 48);
+            h.varBuf[i] = new IRSDKVarBuf(buf, 48 + i * 16);
         }
     }
 
