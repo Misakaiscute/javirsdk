@@ -21,13 +21,13 @@ public class Main {
             IRSDKHeader.update(buffer);
             if (carIdxSpeed == null) {
                 System.out.printf("IRSDK version: %s", IRSDKHeader.getInstance().getVersion());
-                int speed_idx = IRSDKHeader.getInstance().scoutNameToIdx("CarIdxSpeed");
+                int speed_idx = IRSDKHeader.getInstance().scoutNameToIdx("Speed");
                 carIdxSpeed = IRSDKHeader.getInstance().getVarHeaderEntry(speed_idx);
             }
             IRSDKVarBuf curBuf = IRSDKHeader.getInstance().varBuf[IRSDKHeader.getInstance().getCurBuf()];
             float[] carSpeeds = curBuf.getFloats(carIdxSpeed.getOffset(), carIdxSpeed.getCount());
             for (int i = 0; i < carSpeeds.length; i++) {
-                System.out.printf("Car %i Speed: %dkm/h \n", i, carSpeeds[i] * 3.6);
+                System.out.printf("Car speed: %f km/h \n", carSpeeds[i] * 3.6);
             }
             Thread.sleep(20);
         }
