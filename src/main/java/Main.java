@@ -24,7 +24,6 @@ public class Main {
                 }
             }
         }
-
     }
     private static void clearConsole() {
         System.out.println("\f");

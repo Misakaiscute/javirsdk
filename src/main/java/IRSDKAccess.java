@@ -27,7 +27,7 @@ public class IRSDKAccess {
     }
 
     protected IRSDKHeader irsdkHeader;
-    public HashMap<String, IRSDKVarHeader> cachedVarHeaders;
+    public HashMap<String, IRSDKVarHeader> cachedVarHeaders = new HashMap<>();
 
     protected Pointer varBufSnapshot;
     protected int lastSuccessSnapshotTickCount = Integer.MAX_VALUE;
@@ -66,6 +66,11 @@ public class IRSDKAccess {
             Kernel32.INSTANCE.CloseHandle(memMappedFile);
             memMappedFile = null;
         }
+
+        lastSuccessSnapshotTickCount = Integer.MAX_VALUE;
+        irsdkHeader = null;
+        varBufSnapshot = null;
+        cachedVarHeaders.clear();
     }
 
     public boolean getNewData() throws IllegalStateException {
