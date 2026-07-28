@@ -2,7 +2,7 @@ package irsdkdef;
 
 import com.sun.jna.Pointer;
 
-public class IRSDKVarHeader {
+public final class IRSDKVarHeader {
     public static final int SIZE_BYTE = 144;
     private final int IRSDK_MAX_STRING = 32;
     private final int IRSDK_MAX_DESC = 64;

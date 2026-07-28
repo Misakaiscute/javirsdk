@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Javirsdk {
+public final class Javirsdk {
     private static Javirsdk INSTANCE;
     public static Javirsdk getInstance() {
         if (INSTANCE == null) {
