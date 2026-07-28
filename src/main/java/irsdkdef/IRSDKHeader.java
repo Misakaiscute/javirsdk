@@ -5,8 +5,6 @@ import com.sun.jna.Pointer;
 public record IRSDKHeader (
     Pointer buf
 ) {
-    public static final int IRSDK_MAX_BUFS = 4;
-
     public int getVersion() {
         return buf.getInt(0);
     } // this api header version, see IRSDK_VER
