@@ -146,13 +146,13 @@ public final class Javirsdk {
         throw new IllegalArgumentException("Variable %s not found".formatted(name));
     }
 
-    public void bindNewIrsdkDataHandler(String id, JavirsdkNewDataHandler handler) {
+    public void bindOnNewDataHandler(String id, JavirsdkNewDataHandler handler) {
         handlers.put(id, handler);
         if (!handlerExecutor.isAlive() && isSimRunning()) {
             handlerExecutor.start();
         }
     }
-    public void unbindNewIrsdkDataHandler(String id) {
+    public void unbindOnNewDataHandler(String id) {
         handlers.remove(id);
         //No need to stop the executor, once all the handlers are removed, it'll return
     }
