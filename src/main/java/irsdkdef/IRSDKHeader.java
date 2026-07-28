@@ -1,7 +1,10 @@
+package irsdkdef;
+
 import com.sun.jna.Pointer;
 
-public class IRSDKHeader {
-    private final Pointer buf;
+public record IRSDKHeader (
+    Pointer buf
+) {
     public static final int IRSDK_MAX_BUFS = 4;
 
     public int getVersion() {
@@ -11,7 +14,7 @@ public class IRSDKHeader {
         return buf.getInt(4);
     } // bitfield using irsdk_StatusField
     public int getTickRateMs() {
-        return (int)Math.ceil((double)1000 / buf.getInt(8));
+        return (int) Math.ceil((double) 1000 / buf.getInt(8));
     } // time between writes (ms)
 
     // Session information, updated periodically
@@ -45,15 +48,12 @@ public class IRSDKHeader {
     public byte getCurBuf() {
         return buf.getByte(44);
     } // index of the most recently written buffer (0 to IRSDK_MAX_BUFS-1) NOTE: this is an UNSIGNED char in the official SDK
+
     public IRSDKVarBuf getVarBuf(int index) throws IllegalArgumentException {
         if (index < 0 || index >= getNumBuf()) {
-            throw new IllegalArgumentException(String.format("Index must be 0<index<IRSDK_MAX_BUF, : %d", index));
+            throw new IllegalArgumentException(String.format("Index must be 0 < index < IRSDK_MAX_BUF, : %d found", index));
         }
         return new IRSDKVarBuf(buf, 48 + index * getBufLen());
-    }
-
-    public IRSDKHeader(Pointer buf) {
-        this.buf = buf;
     }
 
     public int calcIdxVarHeaderOffset(int idx) {

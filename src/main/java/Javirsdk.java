@@ -3,34 +3,45 @@ import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinBase;
 import com.sun.jna.platform.win32.WinNT;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
+import irsdkdef.IRSDKHeader;
+import irsdkdef.IRSDKVarBuf;
+import irsdkdef.IRSDKVarHeader;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class IRSDKAccess {
-    private static IRSDKAccess INSTANCE;
-    public static IRSDKAccess getInstance() {
+public class Javirsdk {
+    private static Javirsdk INSTANCE;
+    public static Javirsdk getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new IRSDKAccess();
+            INSTANCE = new Javirsdk();
         }
         return INSTANCE;
     }
+    private Javirsdk() {
+        handlerExecutor.setDaemon(true);
+    }
 
-    protected HANDLE memMappedFile;
-    protected Pointer buf;
-    protected HANDLE newDataEvent;
+    private final ConcurrentHashMap<String, JavirsdkNewDataHandler> handlers = new ConcurrentHashMap<>(16);
+    private final JavirsdkNewIrsdkDataRunner runner = new JavirsdkNewIrsdkDataRunner(handlers);
+    private final Thread handlerExecutor = new Thread(runner);
+
+    private HANDLE memMappedFile;
+    private Pointer buf;
+    private HANDLE newDataEvent;
+    private IRSDKHeader irsdkHeader;
     public boolean isConnected() {
         return memMappedFile != null && buf != null && newDataEvent != null;
     }
     public boolean isSimRunning() {
-        return (irsdkHeader.getStatus() & 1) != 0;
+        return isConnected() && (irsdkHeader.getStatus() & 1) != 0;
     }
 
-    protected IRSDKHeader irsdkHeader;
-    public HashMap<String, IRSDKVarHeader> cachedVarHeaders = new HashMap<>();
+    private final HashMap<String, IRSDKVarHeader> cachedVarHeaders = new HashMap<>();
 
-    protected Pointer varBufSnapshot;
-    protected int lastSuccessSnapshotTickCount = Integer.MAX_VALUE;
+    private Pointer varBufSnapshot;
+    private int lastSuccessSnapshotTickCount = Integer.MAX_VALUE;
 
     public void openConnection() throws IOException {
         final String IRSDKMemMapFileName = "Local\\IRSDKMemMapFileName";
@@ -38,21 +49,25 @@ public class IRSDKAccess {
 
         memMappedFile = Kernel32.INSTANCE.OpenFileMapping(WinNT.FILE_MAP_READ, false, IRSDKMemMapFileName);
         if (memMappedFile == null) {
-            throw new IllegalStateException("Failed to open telemetry file.");
+            throw new IOException("Failed to open telemetry file.");
         }
 
         buf = Kernel32.INSTANCE.MapViewOfFile(memMappedFile, WinBase.FILE_MAP_READ, 0, 0, 0);
         if (buf == null) {
-            throw new IllegalStateException("Unable to load telemetry file into memory.");
+            throw new IOException("Unable to load telemetry file into memory.");
         }
         irsdkHeader = new IRSDKHeader(buf);
 
         newDataEvent = Kernel32.INSTANCE.OpenEvent(WinNT.SYNCHRONIZE, false, IRSDKDataValidEvent);
         if (newDataEvent == null) {
-            throw new IllegalStateException("Unable to subscribe to new data event.");
+            throw new IOException("Unable to subscribe to new data event.");
+        }
+
+        //If everything went well and there are waiting handlers, start running them
+        if (!handlers.isEmpty()) {
+            handlerExecutor.start();
         }
     }
-
     public void closeConnection() {
         if (newDataEvent != null) {
             Kernel32.INSTANCE.CloseHandle(newDataEvent);
@@ -105,8 +120,7 @@ public class IRSDKAccess {
 
         return false;
     }
-
-    public boolean waitForNewData() throws IllegalStateException {
+    public void waitForNewData() throws IllegalStateException {
         if (!isConnected()) {
             throw new IllegalStateException("Yet to connect to iRacing telemetry data. Have you called openConnection() first?");
         } else if (!isSimRunning()) {
@@ -115,9 +129,8 @@ public class IRSDKAccess {
 
         if (!getNewData()) {
             Kernel32.INSTANCE.WaitForSingleObject(newDataEvent, irsdkHeader.getCurBufTickCount());
-            return getNewData();
+            getNewData();
         }
-        return true;
     }
 
     public IRSDKVarHeader getVarHeaderByName(String name) throws IllegalArgumentException {
@@ -125,7 +138,7 @@ public class IRSDKAccess {
             return cachedVarHeaders.get(name);
         }
         for(int idx = 0; idx < irsdkHeader.getNumVars(); ++idx) {
-            IRSDKVarHeader varHeader = new IRSDKVarHeader(buf, irsdkHeader.calcIdxVarHeaderOffset(idx));
+            IRSDKVarHeader varHeader = new IRSDKVarHeader(buf, varBufSnapshot, irsdkHeader.calcIdxVarHeaderOffset(idx));
             if (varHeader.getName().equals(name)) {
                 return varHeader;
             }
@@ -133,56 +146,14 @@ public class IRSDKAccess {
         throw new IllegalArgumentException("Variable %s not found".formatted(name));
     }
 
-    public boolean[] getBooleanArray(IRSDKVarHeader forHeader) {
-        int count = forHeader.getCount();
-        byte[] temp = varBufSnapshot.getByteArray(forHeader.getOffset(), count);
-        boolean[] res = new boolean[count];
-        for(int i = 0; i < count; i++) {
-            res[i] = temp[i] == 1;
+    public void bindNewIrsdkDataHandler(String id, JavirsdkNewDataHandler handler) {
+        handlers.put(id, handler);
+        if (!handlerExecutor.isAlive() && isSimRunning()) {
+            handlerExecutor.start();
         }
-        return res;
     }
-    public boolean getBoolean(IRSDKVarHeader forHeader) {
-        return varBufSnapshot.getByte(forHeader.getOffset()) == 1;
-    }
-    public byte[] getByteArray(IRSDKVarHeader forHeader) {
-        int count = forHeader.getCount();
-        return varBufSnapshot.getByteArray(forHeader.getOffset(), count);
-    }
-    public byte getByte(IRSDKVarHeader forHeader) {
-        return varBufSnapshot.getByte(forHeader.getOffset());
-    }
-    public char[] getCharArray(IRSDKVarHeader forHeader) {
-        int count = forHeader.getCount();
-        byte[] temp = varBufSnapshot.getByteArray(forHeader.getOffset(), count);
-        char[] res = new char[count];
-        for(int i = 0; i < count; i++) {
-            res[i] = (char)temp[i];
-        }
-        return res;
-    }
-    public char getChar(IRSDKVarHeader forHeader) {
-        return (char)varBufSnapshot.getByte(forHeader.getOffset());
-    }
-    public int[] getIntArray(IRSDKVarHeader forHeader) {
-        int count = forHeader.getCount();
-        return varBufSnapshot.getIntArray(forHeader.getOffset(), count);
-    }
-    public int getInt(IRSDKVarHeader forHeader) {
-        return varBufSnapshot.getInt(forHeader.getOffset());
-    }
-    public float[] getFloatArray(IRSDKVarHeader forHeader) {
-        int count = forHeader.getCount();
-        return varBufSnapshot.getFloatArray(forHeader.getOffset(), count);
-    }
-    public float getFloat(IRSDKVarHeader forHeader) {
-        return varBufSnapshot.getFloat(forHeader.getOffset());
-    }
-    public double[] getDoubleArray(IRSDKVarHeader forHeader) {
-        int count = forHeader.getCount();
-        return varBufSnapshot.getDoubleArray(forHeader.getOffset(), count);
-    }
-    public double getDouble(IRSDKVarHeader forHeader) {
-        return varBufSnapshot.getDouble(forHeader.getOffset());
+    public void unbindNewIrsdkDataHandler(String id) {
+        handlers.remove(id);
+        //No need to stop the executor, once all the handlers are removed, it'll return
     }
 }
