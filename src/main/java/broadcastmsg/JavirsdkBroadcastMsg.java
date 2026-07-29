@@ -29,7 +29,7 @@ public abstract class JavirsdkBroadcastMsg {
         int numParsed = 0;
         for (int i = numLength - 1; i >= 0; i--) {
             int fromAscii = (int)num[i] - 48;
-            if (fromAscii <= 9 && fromAscii > 0) {
+            if (fromAscii <= 9 && fromAscii >= 0) {
                 numParsed += fromAscii * decPlace;
                 decPlace = decPlace * 10;
             } else {
