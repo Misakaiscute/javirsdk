@@ -28,9 +28,10 @@ public abstract class JavirsdkBroadcastMsg {
         int decPlace = 1;
         int numParsed = 0;
         for (int i = numLength - 1; i >= 0; i--) {
-            if ((int)num[i] - 48 <= 9) {
-                numParsed += (int)num[i] - 48 * decPlace;
-                decPlace++;
+            int fromAscii = (int)num[i] - 48;
+            if (fromAscii <= 9 && fromAscii > 0) {
+                numParsed += fromAscii * decPlace;
+                decPlace = decPlace * 10;
             } else {
                 numLength--;
             }
