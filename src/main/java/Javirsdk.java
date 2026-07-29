@@ -1,7 +1,6 @@
+import broadcastmsg.JavirsdkBroadcastMsg;
 import com.sun.jna.Pointer;
-import com.sun.jna.platform.win32.Kernel32;
-import com.sun.jna.platform.win32.WinBase;
-import com.sun.jna.platform.win32.WinNT;
+import com.sun.jna.platform.win32.*;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 import irsdkdef.IRSDKHeader;
 import irsdkdef.IRSDKVarBuf;
@@ -12,6 +11,7 @@ import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class Javirsdk {
+    //Singleton
     private static Javirsdk INSTANCE;
     public static Javirsdk getInstance() {
         if (INSTANCE == null) {
@@ -23,13 +23,11 @@ public final class Javirsdk {
         handlerExecutor.setDaemon(true);
     }
 
-    private final ConcurrentHashMap<String, JavirsdkNewDataHandler> handlers = new ConcurrentHashMap<>(16);
-    private final JavirsdkNewIrsdkDataRunner runner = new JavirsdkNewIrsdkDataRunner(handlers);
-    private final Thread handlerExecutor = new Thread(runner);
-
+    //Opening of required channels
     private HANDLE memMappedFile;
     private Pointer buf;
     private HANDLE newDataEvent;
+    private int broadcastMsgId = -1;
     private IRSDKHeader irsdkHeader;
     public boolean isConnected() {
         return memMappedFile != null && buf != null && newDataEvent != null;
@@ -37,21 +35,15 @@ public final class Javirsdk {
     public boolean isSimRunning() {
         return isConnected() && (irsdkHeader.getStatus() & 1) != 0;
     }
-
-    private final HashMap<String, IRSDKVarHeader> cachedVarHeaders = new HashMap<>();
-
-    private Pointer varBufSnapshot;
-    private int lastSuccessSnapshotTickCount = Integer.MAX_VALUE;
-
     public void openConnection() throws IOException {
         final String IRSDKMemMapFileName = "Local\\IRSDKMemMapFileName";
         final String IRSDKDataValidEvent = "Local\\IRSDKDataValidEvent";
+        final String IRSDKBroadcastMsgName = "IRSDK_BROADCASTMSG";
 
         memMappedFile = Kernel32.INSTANCE.OpenFileMapping(WinNT.FILE_MAP_READ, false, IRSDKMemMapFileName);
         if (memMappedFile == null) {
             throw new IOException("Failed to open telemetry file.");
         }
-
         buf = Kernel32.INSTANCE.MapViewOfFile(memMappedFile, WinBase.FILE_MAP_READ, 0, 0, 0);
         if (buf == null) {
             throw new IOException("Unable to load telemetry file into memory.");
@@ -62,8 +54,12 @@ public final class Javirsdk {
         if (newDataEvent == null) {
             throw new IOException("Unable to subscribe to new data event.");
         }
+        broadcastMsgId = User32.INSTANCE.RegisterWindowMessage(IRSDKBroadcastMsgName);
+        if (broadcastMsgId == -1) {
+            throw new IOException("Unable to open message channel.");
+        }
 
-        //If everything went well and there are waiting handlers, start running them
+        //If there are waiting handlers, start running them
         if (!handlers.isEmpty()) {
             handlerExecutor.start();
         }
@@ -81,13 +77,46 @@ public final class Javirsdk {
             Kernel32.INSTANCE.CloseHandle(memMappedFile);
             memMappedFile = null;
         }
+        irsdkHeader = null;
+        broadcastMsgId = -1;
 
         lastSuccessSnapshotTickCount = Integer.MAX_VALUE;
-        irsdkHeader = null;
         varBufSnapshot = null;
         cachedVarHeaders.clear();
     }
 
+    //Message broadcasting
+    public void broadcastMsg(JavirsdkBroadcastMsg msg)  {
+        if (!isConnected()) {
+            throw new IllegalStateException("Yet to connect to iRacing telemetry data. Have you called openConnection() first?");
+        } else if (!isSimRunning()) {
+            throw new IllegalStateException("iRacing not running.");
+        } else if (broadcastMsgId == -1) {
+            throw new IllegalStateException("Broadcasting channel isn't open.");
+        }
+
+        User32.INSTANCE.PostMessage(User32.HWND_BROADCAST, broadcastMsgId, msg.getFirstParam(), msg.getSecondParam());
+    }
+
+    //On new data handlers
+    private final ConcurrentHashMap<String, JavirsdkNewDataHandler> handlers = new ConcurrentHashMap<>(16);
+    private final JavirsdkNewIrsdkDataRunner runner = new JavirsdkNewIrsdkDataRunner(handlers);
+    private final Thread handlerExecutor = new Thread(runner);
+    public void bindOnNewDataHandler(String id, JavirsdkNewDataHandler handler) {
+        handlers.put(id, handler);
+        if (!handlerExecutor.isAlive() && isSimRunning()) {
+            handlerExecutor.start();
+        }
+    }
+    public void unbindOnNewDataHandler(String id) {
+        handlers.remove(id);
+        //No need to stop the executor, once all the handlers are removed, it'll return
+    }
+
+    //New data retrieval
+    private final HashMap<String, IRSDKVarHeader> cachedVarHeaders = new HashMap<>();
+    private Pointer varBufSnapshot;
+    private int lastSuccessSnapshotTickCount = Integer.MAX_VALUE;
     public boolean getNewData() throws IllegalStateException {
         if (!isConnected()) {
             throw new IllegalStateException("Yet to connect to iRacing telemetry data. Have you called openConnection() first?");
@@ -133,6 +162,7 @@ public final class Javirsdk {
         }
     }
 
+    //Var header retrieval
     public IRSDKVarHeader getVarHeaderByName(String name) throws IllegalArgumentException {
         if (cachedVarHeaders.containsKey(name)) {
             return cachedVarHeaders.get(name);
@@ -144,16 +174,5 @@ public final class Javirsdk {
             }
         }
         throw new IllegalArgumentException("Variable %s not found".formatted(name));
-    }
-
-    public void bindOnNewDataHandler(String id, JavirsdkNewDataHandler handler) {
-        handlers.put(id, handler);
-        if (!handlerExecutor.isAlive() && isSimRunning()) {
-            handlerExecutor.start();
-        }
-    }
-    public void unbindOnNewDataHandler(String id) {
-        handlers.remove(id);
-        //No need to stop the executor, once all the handlers are removed, it'll return
     }
 }
