@@ -1,6 +1,6 @@
-package broadcastmsg.messages;
+package javirsdk.broadcast_msg.messages;
 
-import broadcastmsg.JavirsdkBroadcastMsg;
+import javirsdk.broadcast_msg.JavirsdkBroadcastMsg;
 import com.sun.jna.platform.win32.WinDef;
 
 public class ReloadTexturesMsg extends JavirsdkBroadcastMsg {

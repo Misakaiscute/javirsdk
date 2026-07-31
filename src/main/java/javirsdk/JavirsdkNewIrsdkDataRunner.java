@@ -1,3 +1,5 @@
+package javirsdk;
+
 import java.util.concurrent.ConcurrentHashMap;
 
 public record JavirsdkNewIrsdkDataRunner (

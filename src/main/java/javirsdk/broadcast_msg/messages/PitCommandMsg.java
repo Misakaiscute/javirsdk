@@ -1,9 +1,7 @@
-package broadcastmsg.messages;
+package javirsdk.broadcast_msg.messages;
 
-import broadcastmsg.JavirsdkBroadcastMsg;
+import javirsdk.broadcast_msg.JavirsdkBroadcastMsg;
 import com.sun.jna.platform.win32.WinDef;
-
-import java.util.Optional;
 
 // irsdk_PitCommandMode, parameter
 public class PitCommandMsg extends JavirsdkBroadcastMsg {

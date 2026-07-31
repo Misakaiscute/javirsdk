@@ -1,12 +1,12 @@
-package broadcastmsg.messages;
+package javirsdk.broadcast_msg.messages;
 
-import broadcastmsg.JavirsdkBroadcastMsg;
+import javirsdk.broadcast_msg.JavirsdkBroadcastMsg;
 import com.sun.jna.platform.win32.WinDef;
 
-public class CamSwitchToCarPosMsg extends JavirsdkBroadcastMsg {
+public class CamSwitchToCarNumMsg extends JavirsdkBroadcastMsg {
     @Override
     public int getMsgOrder() {
-        return 0;
+        return 1;
     }
     public enum FocusOnCommand {
         Incident(-3),
@@ -20,25 +20,25 @@ public class CamSwitchToCarPosMsg extends JavirsdkBroadcastMsg {
     }
 
     private FocusOnCommand command;
-    private int carPos;
+    private int carNumPadded;
     private int camGroupNum = 0;
     private int camNum = 0;
 
-    public CamSwitchToCarPosMsg(FocusOnCommand command, int camGroupNum, int camNum) {
+    public CamSwitchToCarNumMsg(FocusOnCommand command, int camGroupNum, int camNum) {
         this.command = command;
         this.camGroupNum = camGroupNum;
         this.camNum = camNum;
     }
-    public CamSwitchToCarPosMsg(FocusOnCommand command) {
+    public CamSwitchToCarNumMsg(FocusOnCommand command) {
         this.command = command;
     }
-    public CamSwitchToCarPosMsg(int carPos, int camGroupNum, int camNum) {
-        this.carPos = carPos;
+    public CamSwitchToCarNumMsg(char[] carNum, int camGroupNum, int camNum) {
+        this.carNumPadded = super.padCarNumber(carNum);
         this.camGroupNum = camGroupNum;
         this.camNum = camNum;
     }
-    public CamSwitchToCarPosMsg(int carPos) {
-        this.carPos = carPos;
+    public CamSwitchToCarNumMsg(char[] carNum) {
+        this.carNumPadded = super.padCarNumber(carNum);
     }
 
     @Override
@@ -47,13 +47,13 @@ public class CamSwitchToCarPosMsg extends JavirsdkBroadcastMsg {
         if (command != null) {
             retVal = super.encodeIntsToHighLowInt(getMsgOrder(), command.order);
         } else {
-            retVal = super.encodeIntsToHighLowInt(getMsgOrder(), carPos);
+            retVal = super.encodeIntsToHighLowInt(getMsgOrder(), carNumPadded);
         }
         return new WinDef.WPARAM(retVal);
     }
     @Override
     public WinDef.LPARAM getSecondParam() {
-        int retVal = super.encodeIntsToHighLowInt(camGroupNum, camNum);
-        return new WinDef.LPARAM(retVal);
+        int highLowInt = super.encodeIntsToHighLowInt(camGroupNum, camNum);
+        return new WinDef.LPARAM(highLowInt);
     }
 }

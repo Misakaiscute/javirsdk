@@ -1,4 +1,6 @@
-import broadcastmsg.JavirsdkBroadcastMsg;
+package javirsdk;
+
+import javirsdk.broadcast_msg.JavirsdkBroadcastMsg;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.*;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
