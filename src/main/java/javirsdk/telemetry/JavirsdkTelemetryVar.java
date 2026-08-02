@@ -1,7 +1,6 @@
 package javirsdk.telemetry;
 
 import irsdkdef.IRSDKVarType;
-import javirsdk.telemetry.variables.JavirsdkVarAirDensity;
 
 //All the telemetry variables inherit from this abstract class.
 //The names of classes are very intentional, because it encodes the
@@ -10,12 +9,12 @@ import javirsdk.telemetry.variables.JavirsdkVarAirDensity;
 //obtain its IRSDKVarHeader) would be "JavirsdkVarAirDensity"
 public abstract class JavirsdkTelemetryVar<T> {
     private final String childClsName = getClass().getSimpleName();
-    public final String IRSDKVarName = childClsName.substring(11, childClsName.length() - 1);
+    public final String varName = childClsName.substring(11, childClsName.length() - 1);
 
     protected T value;
     public T getValue() {
         return value;
-    };
+    }
     public void setValue(T value) {
         this.value = value;
     }
