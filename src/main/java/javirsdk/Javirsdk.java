@@ -7,9 +7,12 @@ import com.sun.jna.platform.win32.WinNT.HANDLE;
 import irsdkdef.IRSDKHeader;
 import irsdkdef.IRSDKVarBuf;
 import irsdkdef.IRSDKVarHeader;
+import javirsdk.telemetry.JavirsdkTelemetryArrVar;
+import javirsdk.telemetry.JavirsdkTelemetryVar;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class Javirsdk {
@@ -116,7 +119,6 @@ public final class Javirsdk {
     }
 
     //New data retrieval
-    private final HashMap<String, IRSDKVarHeader> cachedVarHeaders = new HashMap<>();
     private Pointer varBufSnapshot;
     private int lastSuccessSnapshotTickCount = Integer.MAX_VALUE;
     public boolean getNewData() throws IllegalStateException {
@@ -164,7 +166,31 @@ public final class Javirsdk {
         }
     }
 
-    //Var header retrieval
+    //Variable retrival
+    private final HashMap<String, IRSDKVarHeader> cachedVarHeaders = new HashMap<>();
+    @SuppressWarnings("unchecked")
+    public <T extends JavirsdkTelemetryVar<?>> void updateTelemetryVariable(T instance) {
+        IRSDKVarHeader varHeader = getVarHeaderByName(instance.varName);
+        switch (instance.getType()) {
+            case IRSDK_CHAR -> ((JavirsdkTelemetryVar<Character>)instance).setValue(varHeader.getChar());
+            case IRSDK_BOOL -> ((JavirsdkTelemetryVar<Boolean>)instance).setValue(varHeader.getBoolean());
+            case IRSDK_INT, IRSDK_BITFIELD -> ((JavirsdkTelemetryVar<Integer>)instance).setValue(varHeader.getInt());
+            case IRSDK_FLOAT -> ((JavirsdkTelemetryVar<Float>)instance).setValue(varHeader.getFloat());
+            case IRSDK_DOUBLE -> ((JavirsdkTelemetryVar<Double>)instance).setValue(varHeader.getDouble());
+        }
+    }
+    @SuppressWarnings("unchecked")
+    public <T extends JavirsdkTelemetryArrVar<?>> void updateTelemetryVariable(T instance) {
+        IRSDKVarHeader varHeader = getVarHeaderByName(instance.varName);
+        switch (instance.getType()) {
+            case IRSDK_CHAR -> ((JavirsdkTelemetryArrVar<Character>)instance).setValue(varHeader.getCharArray());
+            case IRSDK_BOOL -> ((JavirsdkTelemetryArrVar<Boolean>)instance).setValue(varHeader.getBooleanArray());
+            case IRSDK_INT, IRSDK_BITFIELD -> ((JavirsdkTelemetryArrVar<Integer>)instance).setValue(varHeader.getIntArray());
+            case IRSDK_FLOAT -> ((JavirsdkTelemetryArrVar<Float>)instance).setValue(varHeader.getFloatArray());
+            case IRSDK_DOUBLE -> ((JavirsdkTelemetryArrVar<Double>)instance).setValue(varHeader.getDoubleArray());
+        }
+    }
+
     public IRSDKVarHeader getVarHeaderByName(String name) throws IllegalArgumentException {
         if (cachedVarHeaders.containsKey(name)) {
             return cachedVarHeaders.get(name);

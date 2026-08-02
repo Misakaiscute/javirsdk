@@ -45,10 +45,10 @@ public final class IRSDKVarHeader {
         this.sharedBufOffset = sharedBufOffset;
     }
 
-    public boolean[] getBooleanArray() {
+    public Boolean[] getBooleanArray() {
         int count = getCount();
         byte[] temp = varBufSnapshot.getByteArray(getVarBufOffset(), count);
-        boolean[] res = new boolean[count];
+        Boolean[] res = new Boolean[count];
         for(int i = 0; i < count; i++) {
             res[i] = temp[i] == 1;
         }
@@ -57,17 +57,10 @@ public final class IRSDKVarHeader {
     public boolean getBoolean() {
         return varBufSnapshot.getByte(getVarBufOffset()) == 1;
     }
-    public byte[] getByteArray() {
-        int count = getCount();
-        return varBufSnapshot.getByteArray(getVarBufOffset(), count);
-    }
-    public byte getByte() {
-        return varBufSnapshot.getByte(getVarBufOffset());
-    }
-    public char[] getCharArray() {
+    public Character[] getCharArray() {
         int count = getCount();
         byte[] temp = varBufSnapshot.getByteArray(getVarBufOffset(), count);
-        char[] res = new char[count];
+        Character[] res = new Character[count];
         for(int i = 0; i < count; i++) {
             res[i] = (char)temp[i];
         }
@@ -76,23 +69,38 @@ public final class IRSDKVarHeader {
     public char getChar() {
         return (char)varBufSnapshot.getByte(getVarBufOffset());
     }
-    public int[] getIntArray() {
+    public Integer[] getIntArray() {
         int count = getCount();
-        return varBufSnapshot.getIntArray(getVarBufOffset(), count);
+        int[] temp = varBufSnapshot.getIntArray(getVarBufOffset(), count);
+        Integer[] res = new Integer[count];
+        for(int i = 0; i < count; i++) {
+            res[i] = temp[i];
+        }
+        return res;
     }
     public int getInt() {
         return varBufSnapshot.getInt(getVarBufOffset());
     }
-    public float[] getFloatArray() {
+    public Float[] getFloatArray() {
         int count = getCount();
-        return varBufSnapshot.getFloatArray(getVarBufOffset(), count);
+        float[] temp = varBufSnapshot.getFloatArray(getVarBufOffset(), count);
+        Float[] res = new Float[count];
+        for(int i = 0; i < count; i++) {
+            res[i] = temp[i];
+        }
+        return res;
     }
     public float getFloat() {
         return varBufSnapshot.getFloat(getVarBufOffset());
     }
-    public double[] getDoubleArray() {
+    public Double[] getDoubleArray() {
         int count = getCount();
-        return varBufSnapshot.getDoubleArray(getVarBufOffset(), count);
+        double[] temp = varBufSnapshot.getDoubleArray(getVarBufOffset(), count);
+        Double[] res = new Double[count];
+        for(int i = 0; i < count; i++) {
+            res[i] = temp[i];
+        }
+        return res;
     }
     public double getDouble() {
         return varBufSnapshot.getDouble(getVarBufOffset());
