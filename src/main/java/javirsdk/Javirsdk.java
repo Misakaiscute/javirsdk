@@ -166,10 +166,10 @@ public final class Javirsdk {
         }
     }
 
-    //Variable retrival
+    //Variable retrieval
     private final HashMap<String, IRSDKVarHeader> cachedVarHeaders = new HashMap<>();
     @SuppressWarnings("unchecked")
-    public <T extends JavirsdkTelemetryVar<?>> void updateTelemetryVariable(T instance) {
+    public void updateTelemetryVariable(JavirsdkTelemetryVar<?> instance) {
         IRSDKVarHeader varHeader = getVarHeaderByName(instance.varName);
         switch (instance.getType()) {
             case IRSDK_CHAR -> ((JavirsdkTelemetryVar<Character>)instance).setValue(varHeader.getChar());
@@ -180,7 +180,7 @@ public final class Javirsdk {
         }
     }
     @SuppressWarnings("unchecked")
-    public <T extends JavirsdkTelemetryArrVar<?>> void updateTelemetryVariable(T instance) {
+    public void updateTelemetryVariable(JavirsdkTelemetryArrVar<?> instance) {
         IRSDKVarHeader varHeader = getVarHeaderByName(instance.varName);
         switch (instance.getType()) {
             case IRSDK_CHAR -> ((JavirsdkTelemetryArrVar<Character>)instance).setValue(varHeader.getCharArray());
