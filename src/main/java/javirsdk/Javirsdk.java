@@ -1,19 +1,17 @@
 package javirsdk;
 
-import javirsdk.broadcast_msg.JavirsdkBroadcastMsg;
+import javirsdk.broadcast.JavirsdkBroadcastMsg;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.*;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 import irsdkdef.IRSDKHeader;
 import irsdkdef.IRSDKVarBuf;
 import irsdkdef.IRSDKVarHeader;
-import javirsdk.telemetry.JavirsdkTelemetryArrVar;
-import javirsdk.telemetry.JavirsdkTelemetryVar;
+import javirsdk.handler.JavirsdkHandlerExecutor;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.LinkedList;
 
 public final class Javirsdk {
     //Singleton
@@ -23,9 +21,6 @@ public final class Javirsdk {
             INSTANCE = new Javirsdk();
         }
         return INSTANCE;
-    }
-    private Javirsdk() {
-        handlerExecutor.setDaemon(true);
     }
 
     //Opening of required channels
@@ -65,7 +60,7 @@ public final class Javirsdk {
         }
 
         //If there are waiting handlers, start running them
-        if (!handlers.isEmpty()) {
+        if (handlerExecutor.hasHandlers()) {
             handlerExecutor.start();
         }
     }
@@ -101,21 +96,6 @@ public final class Javirsdk {
         }
 
         User32.INSTANCE.PostMessage(User32.HWND_BROADCAST, broadcastMsgId, msg.getFirstParam(), msg.getSecondParam());
-    }
-
-    //On new data handlers
-    private final ConcurrentHashMap<String, JavirsdkNewDataHandler> handlers = new ConcurrentHashMap<>(16);
-    private final JavirsdkNewIrsdkDataRunner runner = new JavirsdkNewIrsdkDataRunner(handlers);
-    private final Thread handlerExecutor = new Thread(runner);
-    public void bindOnNewDataHandler(String id, JavirsdkNewDataHandler handler) {
-        handlers.put(id, handler);
-        if (!handlerExecutor.isAlive() && isSimRunning()) {
-            handlerExecutor.start();
-        }
-    }
-    public void unbindOnNewDataHandler(String id) {
-        handlers.remove(id);
-        //No need to stop the executor, once all the handlers are removed, it'll return
     }
 
     //New data retrieval
@@ -166,30 +146,11 @@ public final class Javirsdk {
         }
     }
 
+    //Handler management
+    public final JavirsdkHandlerExecutor handlerExecutor = new JavirsdkHandlerExecutor();
+
     //Variable retrival
     private final HashMap<String, IRSDKVarHeader> cachedVarHeaders = new HashMap<>();
-    @SuppressWarnings("unchecked")
-    public <T extends JavirsdkTelemetryVar<?>> void updateTelemetryVariable(T instance) {
-        IRSDKVarHeader varHeader = getVarHeaderByName(instance.varName);
-        switch (instance.getType()) {
-            case IRSDK_CHAR -> ((JavirsdkTelemetryVar<Character>)instance).setValue(varHeader.getChar());
-            case IRSDK_BOOL -> ((JavirsdkTelemetryVar<Boolean>)instance).setValue(varHeader.getBoolean());
-            case IRSDK_INT, IRSDK_BITFIELD -> ((JavirsdkTelemetryVar<Integer>)instance).setValue(varHeader.getInt());
-            case IRSDK_FLOAT -> ((JavirsdkTelemetryVar<Float>)instance).setValue(varHeader.getFloat());
-            case IRSDK_DOUBLE -> ((JavirsdkTelemetryVar<Double>)instance).setValue(varHeader.getDouble());
-        }
-    }
-    @SuppressWarnings("unchecked")
-    public <T extends JavirsdkTelemetryArrVar<?>> void updateTelemetryVariable(T instance) {
-        IRSDKVarHeader varHeader = getVarHeaderByName(instance.varName);
-        switch (instance.getType()) {
-            case IRSDK_CHAR -> ((JavirsdkTelemetryArrVar<Character>)instance).setValue(varHeader.getCharArray());
-            case IRSDK_BOOL -> ((JavirsdkTelemetryArrVar<Boolean>)instance).setValue(varHeader.getBooleanArray());
-            case IRSDK_INT, IRSDK_BITFIELD -> ((JavirsdkTelemetryArrVar<Integer>)instance).setValue(varHeader.getIntArray());
-            case IRSDK_FLOAT -> ((JavirsdkTelemetryArrVar<Float>)instance).setValue(varHeader.getFloatArray());
-            case IRSDK_DOUBLE -> ((JavirsdkTelemetryArrVar<Double>)instance).setValue(varHeader.getDoubleArray());
-        }
-    }
 
     public IRSDKVarHeader getVarHeaderByName(String name) throws IllegalArgumentException {
         if (cachedVarHeaders.containsKey(name)) {
@@ -202,5 +163,13 @@ public final class Javirsdk {
             }
         }
         throw new IllegalArgumentException("Variable %s not found".formatted(name));
+    }
+    public IRSDKVarHeader[] scoutVarHeaderNames() {
+        LinkedList<IRSDKVarHeader> varHeaders = new LinkedList<>();
+        for(int i = 0; i < irsdkHeader.getNumVars(); ++i) {
+            IRSDKVarHeader varHeader = new IRSDKVarHeader(buf, varBufSnapshot, irsdkHeader.calcIdxVarHeaderOffset(i));
+            varHeaders.add(varHeader);
+        }
+        return varHeaders.toArray(IRSDKVarHeader[]::new);
     }
 }

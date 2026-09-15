@@ -1,9 +1,23 @@
 plugins {
     id 'java'
+    id 'org.jetbrains.kotlin.jvm'
 }
 
-group = 'com.example'
-version = '1.0-SNAPSHOT'
+sourceSets {
+    group 'io.github.misakaiscute'
+    version '1.0.0'
+    main {
+        java.srcDir('src/main/java')
+    }
+    test {
+        java.srcDir('src/test/java')
+    }
+    create('utils') {
+        java.srcDir('src/utils/java')
+        runtimeClasspath += sourceSets.main.output
+        compileClasspath += sourceSets.main.output
+    }
+}
 
 repositories {
     mavenCentral()
@@ -15,8 +29,26 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
 }
 
 test {
     useJUnitPlatform()
+}
+
+kotlin {
+    jvmToolchain(23)
+}
+
+tasks.register('scoutVariables', JavaExec) {
+    group = 'custom'
+    description = 'Scouting variables and transforming them into source code'
+
+    dependsOn 'classes'                       // method call, not setDependsOn { }
+    classpath = sourceSets.utils.runtimeClasspath
+    mainClass = 'javirsdk.JavirsdkTelemetryVariableScouter'
+
+    args = ['--flag', 'value']                // property assignment
+    standardInput = System.in
+    standardOutput = System.out
 }

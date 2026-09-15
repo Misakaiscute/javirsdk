@@ -1,6 +1,6 @@
-package javirsdk.broadcast_msg.messages;
+package javirsdk.broadcast.messages;
 
-import javirsdk.broadcast_msg.JavirsdkBroadcastMsg;
+import javirsdk.broadcast.JavirsdkBroadcastMsg;
 import com.sun.jna.platform.win32.WinDef;
 
 public class CamSwitchToCarPosMsg extends JavirsdkBroadcastMsg {

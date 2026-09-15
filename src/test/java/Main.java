@@ -1,6 +1,5 @@
 import irsdkdef.IRSDKVarHeader;
 import javirsdk.Javirsdk;
-import javirsdk.JavirsdkNewDataHandler;
 
 import java.io.IOException;
 

@@ -1,4 +1,4 @@
-package javirsdk.broadcast_msg;
+package javirsdk.broadcast;
 
 import com.sun.jna.platform.win32.WinDef;
 
