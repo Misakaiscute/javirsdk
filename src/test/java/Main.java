@@ -1,32 +1,27 @@
-import irsdkdef.IRSDKVarHeader;
-import javirsdk.Javirsdk;
-
 import java.io.IOException;
+
+import javirsdk.Javirsdk;
+import javirsdk.handler.JavirsdkHandler;
+import javirsdk.variable.JavirsdkVariable;
+import javirsdk.variable.JavirsdkVariableStateSnapshot;
 
 public class Main {
     public static void main(String[] args) throws InterruptedException {
-        /*JavirsdkNewDataHandler print_speed = () -> {
-            clearConsole();
-            IRSDKVarHeader speedHeader = Javirsdk.getInstance().getVarHeaderByName("Speed");
-            System.out.printf("%s: %d km/h", speedHeader.getName(), (int)(speedHeader.getFloat() * 3.6));
-        };
-        Javirsdk.getInstance().bindOnNewDataHandler("print_speed", print_speed);
-        while(true) {
-            while (!Javirsdk.getInstance().isConnected()) {
+        Javirsdk sdk = Javirsdk.getInstance();
+        while (true) {
+            while (!sdk.isSimRunning()) {
+                System.out.println("Waiting for iRacing to open...");
                 try {
-                    Javirsdk.getInstance().openConnection();
+                    sdk.openConnection();
                 } catch (IOException e) {
                     System.out.println(e.getMessage());
-                }
-                Thread.sleep(2000L);
-                clearConsole();
+                }   
             }
-            if (!Javirsdk.getInstance().isSimRunning()) {
-                Javirsdk.getInstance().closeConnection();
-            }
-        }*/
-    }
-    private static void clearConsole() {
-        System.out.println("\f");
+            System.out.println("Connected to iRacing!");
+            var handler = new JavirsdkHandler("print_speed", (JavirsdkVariableStateSnapshot state) -> {
+                System.out.printf("Speed: %.2f\n", state.getSpeed() * 3.6);
+            }, JavirsdkVariable.SPEED);
+            sdk.handlerExecutor.bind(handler);
+        }
     }
 }

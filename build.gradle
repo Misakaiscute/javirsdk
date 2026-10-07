@@ -44,6 +44,15 @@ kotlin {
     jvmToolchain(21)
 }
 
+tasks.register('runTestMain', JavaExec) {
+    group = 'Execution'
+    description = "Run a manual testing environment."
+    
+    classpath = sourceSets.test.runtimeClasspath
+    
+    mainClass = "Main"
+}
+
 tasks.register('scoutVariables', JavaExec) {
     group = 'custom'
     description = 'Scouting variables and transforming them into source code'
