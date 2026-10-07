@@ -51,7 +51,7 @@ public record IRSDKHeader (
         if (index < 0 || index >= getNumBuf()) {
             throw new IllegalArgumentException(String.format("Index must be 0 < index < IRSDK_MAX_BUF, : %d found", index));
         }
-        return new IRSDKVarBuf(buf, 48 + index * getBufLen());
+        return new IRSDKVarBuf(buf, 48 + index * IRSDKVarBuf.SIZE_BYTE);
     }
 
     public int calcIdxVarHeaderOffset(int idx) {

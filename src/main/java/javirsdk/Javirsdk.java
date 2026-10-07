@@ -1,6 +1,8 @@
 package javirsdk;
 
 import javirsdk.broadcast.JavirsdkBroadcastMsg;
+
+import com.sun.jna.Memory;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.*;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
@@ -49,6 +51,7 @@ public final class Javirsdk {
             throw new IOException("Unable to load telemetry file into memory.");
         }
         irsdkHeader = new IRSDKHeader(buf);
+        varBufSnapshot = new Memory(irsdkHeader.getBufLen());
 
         newDataEvent = Kernel32.INSTANCE.OpenEvent(WinNT.SYNCHRONIZE, false, IRSDKDataValidEvent);
         if (newDataEvent == null) {

@@ -41,7 +41,7 @@ test {
 }
 
 kotlin {
-    jvmToolchain(23)
+    jvmToolchain(21)
 }
 
 tasks.register('scoutVariables', JavaExec) {

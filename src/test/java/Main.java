@@ -5,7 +5,7 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws InterruptedException {
-        JavirsdkNewDataHandler print_speed = () -> {
+        /*JavirsdkNewDataHandler print_speed = () -> {
             clearConsole();
             IRSDKVarHeader speedHeader = Javirsdk.getInstance().getVarHeaderByName("Speed");
             System.out.printf("%s: %d km/h", speedHeader.getName(), (int)(speedHeader.getFloat() * 3.6));
@@ -24,7 +24,7 @@ public class Main {
             if (!Javirsdk.getInstance().isSimRunning()) {
                 Javirsdk.getInstance().closeConnection();
             }
-        }
+        }*/
     }
     private static void clearConsole() {
         System.out.println("\f");

@@ -69,6 +69,7 @@ public final class JavirsdkTelemetryVariableScouter {
                 public JavirsdkVariableStateSnapshot build() {
                     return INSTANCE;
                 }
+                %s
             }
         }
     """;
@@ -81,34 +82,45 @@ public final class JavirsdkTelemetryVariableScouter {
 
             StringBuilder JavirsdkVariableEnumContent = new StringBuilder();
             StringBuilder JavirsdkVariableStateSnapshotContent = new StringBuilder();
+            StringBuilder JavirsdkVariableStateSnapshotBuilderContent = new StringBuilder();
             for (int i = 0; i < varHeaders.length; ++i) {
                 System.out.printf("\\u001B[1m\\u001B[32mScouting variable %s\\u001B[39m\\u001B[22m\n", varHeaders[i].getName());
-                String enumBody = produceVariableEnumEntry(varHeaders[i]);
-                String stateClassBody = produceVariableStateSnapshotEntry(varHeaders[i]);
+
+                String enumEntry = produceVariableEnumEntry(varHeaders[i]);
+                String stateEntry = produceVariableStateSnapshotEntry(varHeaders[i]);
+                String stateBuilderSetter = produceVariableStateSnapshotEntryBuilder(varHeaders[i]);
+
                 if (i == varHeaders.length - 1) {
-                    JavirsdkVariableEnumContent.append(enumBody);
+                    JavirsdkVariableEnumContent.append(enumEntry);
                 } else {
-                    JavirsdkVariableEnumContent.append(enumBody).append(",\n");
+                    JavirsdkVariableEnumContent.append(enumEntry).append(",\n");
                 }
-                JavirsdkVariableStateSnapshotContent.append(stateClassBody).append("\n");
+                JavirsdkVariableStateSnapshotContent.append(stateEntry).append("\n");
+                JavirsdkVariableStateSnapshotBuilderContent.append(stateBuilderSetter).append("\n");
             }
             String JavirsdkVariableEnumConcat = JavirsdkVariableEnumFrame.formatted(JavirsdkVariableEnumContent.toString());
-            String JavirsdkVariableStateSnapshotConcat = JavirsdkVariableStateSnapshotFrame.formatted(JavirsdkVariableStateSnapshotContent.toString());
+            String JavirsdkVariableStateSnapshotConcat = JavirsdkVariableStateSnapshotFrame.formatted(JavirsdkVariableStateSnapshotContent.toString(), JavirsdkVariableStateSnapshotBuilderContent.toString());
             
-            Path path = Path.of("../../../../main/java/javirsdk/variable/");
-            Files.writeString(path.resolve("JavirsdkVariable"), JavirsdkVariableEnumConcat);
-            Files.writeString(path.resolve("JavirsdkVariableStateSnapshot"), JavirsdkVariableStateSnapshotConcat);
+            Path path = Path.of("src/main/java/javirsdk/variable/");
+            Files.writeString(path.resolve("JavirsdkVariable.java"), JavirsdkVariableEnumConcat);
+            Files.writeString(path.resolve("JavirsdkVariableStateSnapshot.java"), JavirsdkVariableStateSnapshotConcat);
         } catch (IOException e) {
             System.out.printf("\u001B[1m\u001B[31m%s error: %s\u001B[39m\u001B[22m%n", JavirsdkTelemetryVariableScouter.class.getName(), e.getMessage());
         }
     }
 
     private static String produceVariableStateSnapshotEntry(IRSDKVarHeader varHeader) {
-        boolean isArray = varHeader.getCount() > 0;
+        /*public Double[] getSessionTime() { 
+            return this.sessionTime;
+        }
+        public void setSessionTime(Double[] v) {
+            this.sessionTime = v;
+        }*/
+        boolean isArray = varHeader.getCount() > 1;
         String type = typeAsString(varHeader) + (isArray ? "[]" : "");
         String fieldName = firstCharLower(varHeader.getName());
 
-        String backingField = "private %s %s = %s;".formatted(type, fieldName, defaultValueAsString(varHeader));
+        String backingField = "private %s %s = %s;".formatted(type, fieldName, defaultValueAsString(varHeader, isArray));
         String getter = "public %s get%s() { return this.%s; }".formatted(type, varHeader.getName(), fieldName);
         String setter = "public void set%s(%s v) { this.%s = v; }".formatted(varHeader.getName(), type, fieldName);
 
@@ -119,19 +131,32 @@ public final class JavirsdkTelemetryVariableScouter {
 
         return entry.toString();
     }
+    private static String produceVariableStateSnapshotEntryBuilder(IRSDKVarHeader varHeader) {
+        /*public Builder setSessionTime(Double[] v) {
+            this.INSTANCE.sessionTime = v;
+            return this;
+        }*/ 
+        boolean isArray = varHeader.getCount() > 1;
+        String type = typeAsString(varHeader) + (isArray ? "[]" : "");
+        String fieldName = firstCharLower(varHeader.getName());
+  
+        String setter = "public Builder set%s(%s v) { this.INSTANCE.%s = v; return this; }".formatted(varHeader.getName(), type, fieldName);
+        return setter;
+    }
 
     private static String produceVariableEnumEntry(IRSDKVarHeader varHeader) {
-        boolean isArray = varHeader.getCount() > 0;
-        String registerHandler = "(JavirsdkVariableStateSnapshot.Builder b, Object v) -> { b.%s(%s v); }".formatted(
-            firstCharLower(varHeader.getName()),
-            typeAsString(varHeader)
+        //SESSIONTIME("SessionTime", IRSDKVarType.IRSDK_DOUBLE, true, (JavirsdkVariableStateSnapshot.Builder b, Object v) -> { b.setSessionTime((Double[])v); }, (JavirsdkVariableStateSnapshot s, Object v) -> { s.setSessionTime((Double[])v); });
+        boolean isArray = varHeader.getCount() > 1;
+        String registerHandler = "(JavirsdkVariableStateSnapshot.Builder b, Object v) -> { b.set%s((%s) v); }".formatted(
+            varHeader.getName(), // fn name
+            isArray ? typeAsString(varHeader) + "[]" : typeAsString(varHeader) // cast
         );
-        String updateHandler = "(JavirsdkVariableStateSnapshot.Builder b, Object v) -> { b.%s(%s v); }".formatted(
-            firstCharLower(varHeader.getName()),
-            typeAsString(varHeader)
+        String updateHandler = "(JavirsdkVariableStateSnapshot s, Object v) -> { s.set%s((%s) v); }".formatted(
+            varHeader.getName(), // fn name
+            isArray ? typeAsString(varHeader) + "[]" : typeAsString(varHeader) // cast
         );
 
-        return "%s(%s, %s, %s, %s, %s)".formatted(
+        return "%s(\"%s\", IRSDKVarType.%s, %s, %s, %s)".formatted(
             varHeader.getName().toUpperCase(),
             varHeader.getName(),
             varHeader.getType(),
@@ -170,22 +195,22 @@ public final class JavirsdkTelemetryVariableScouter {
             }
         }
     }
-    private static String defaultValueAsString(IRSDKVarHeader varHeader) {
+    private static String defaultValueAsString(IRSDKVarHeader varHeader, boolean isArray) {
         switch (varHeader.getType()) {
             case IRSDK_CHAR -> {
-                return "a";
+                return isArray ? "new Character[]{'a'}" : "a";
             }
             case IRSDK_BOOL -> {
-                return "false";
+                return isArray ? "new Boolean[]{false}" : "false";
             }
             case IRSDK_INT, IRSDK_BITFIELD -> {
-                return "0";
+                return isArray ? "new Integer[]{0}" : "0";
             }
             case IRSDK_FLOAT -> {
-                return "0f";
+                return isArray ? "new Float[]{0f}" : "0f";
             }
             case IRSDK_DOUBLE -> {
-                return "0d";
+                return isArray ? "new Double[]{0.0}" : "0.0";
             }
             default -> {
                 return "null";
