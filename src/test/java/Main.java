@@ -27,7 +27,6 @@ public class Main {
                     System.out.println(e.getMessage());
                 }   
             }
-            System.out.println("Connected to iRacing!");
         }
     }
 }

@@ -3,6 +3,8 @@ package javirsdk.handler;
 import javirsdk.Javirsdk;
 
 import java.util.LinkedList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public final class JavirsdkHandlerExecutor {
     private final LinkedList<JavirsdkHandler> entries = new LinkedList<>();
@@ -10,7 +12,7 @@ public final class JavirsdkHandlerExecutor {
         return !entries.isEmpty();
     }
     private final JavirsdkRunner runner = new JavirsdkRunner(entries);
-    private final Thread executor = new Thread(runner);
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public void bind(JavirsdkHandler handler) throws IllegalArgumentException {
         if (entries.contains(handler)) {
@@ -21,7 +23,7 @@ public final class JavirsdkHandlerExecutor {
                 entries.add(handler);
             }
             if (Javirsdk.getInstance().isConnected()) {
-                executor.start();
+                executor.submit(runner);
             }
         } else {
             synchronized (entries) {
@@ -39,6 +41,6 @@ public final class JavirsdkHandlerExecutor {
         }
     }
     public void start() {
-        executor.start();
+        executor.submit(runner);
     }
 }
