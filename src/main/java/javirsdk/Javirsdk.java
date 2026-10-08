@@ -1,6 +1,8 @@
 package javirsdk;
 
 import javirsdk.broadcast.JavirsdkBroadcastMsg;
+import javirsdk.exceptions.JavirsdkIRacingClosingException;
+import javirsdk.exceptions.JavirsdkIRacingNotRunningException;
 
 import com.sun.jna.Memory;
 import com.sun.jna.Pointer;
@@ -15,6 +17,14 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+/**
+ * Javirsdk is the singleton main entrypoint for the javirsdk package
+ *
+ * Main interfaces for most users are:
+ *    '.openConnection',
+ *    '.closeConnection',
+ *    and handler binding with '.handlerExecutor'.
+ */
 public final class Javirsdk {
     //Singleton
     private static Javirsdk INSTANCE;
@@ -23,6 +33,30 @@ public final class Javirsdk {
             INSTANCE = new Javirsdk();
         }
         return INSTANCE;
+    }
+    //Handler management
+    public final JavirsdkHandlerExecutor handlerExecutor = new JavirsdkHandlerExecutor();
+
+    //Exception handling
+    private Runnable actionOnException = () -> {};
+    /**
+     * Set the lambda to run before closing the connection 
+     * with 'onIRacingClosing'
+     * @param a Accepts a lambda expression or null (which is equal to an empty lambda)
+     */
+    public void setOnIRacingClosingAction(Runnable a) {
+        if (a == null) {
+            actionOnException = () -> {};
+        }
+        actionOnException = a;
+    }
+    /**
+     * Closes the connection to the sdk and runs the action
+     * specified with 'setOnIRacingClosingAction'
+     */
+    public void onIRacingClosing() {
+        actionOnException.run();
+        closeConnection();
     }
 
     //Opening of required channels
@@ -89,13 +123,11 @@ public final class Javirsdk {
     }
 
     //Message broadcasting
-    public void broadcastMsg(JavirsdkBroadcastMsg msg)  {
-        if (!isConnected()) {
-            throw new IllegalStateException("Yet to connect to iRacing telemetry data. Have you called openConnection() first?");
-        } else if (!isSimRunning()) {
-            throw new IllegalStateException("iRacing not running.");
+    public void broadcastMsg(JavirsdkBroadcastMsg msg) throws JavirsdkIRacingNotRunningException {
+        if (!isSimRunning()) {
+            throw new JavirsdkIRacingNotRunningException("iRacing not running.");
         } else if (broadcastMsgId == -1) {
-            throw new IllegalStateException("Broadcasting channel isn't open.");
+            throw new JavirsdkIRacingNotRunningException("Broadcasting channel isn't open.");
         }
 
         User32.INSTANCE.PostMessage(User32.HWND_BROADCAST, broadcastMsgId, msg.getFirstParam(), msg.getSecondParam());
@@ -104,11 +136,9 @@ public final class Javirsdk {
     //New data retrieval
     private Pointer varBufSnapshot;
     private int lastSuccessSnapshotTickCount = Integer.MAX_VALUE;
-    public boolean getNewData() throws IllegalStateException {
-        if (!isConnected()) {
-            throw new IllegalStateException("Yet to connect to iRacing telemetry data. Have you called openConnection() first?");
-        } else if (!isSimRunning()) {
-            throw new IllegalStateException("iRacing not running.");
+    public boolean getNewData() throws JavirsdkIRacingNotRunningException {
+        if (!isSimRunning()) {
+            throw new JavirsdkIRacingNotRunningException("iRacing not running.");
         }
 
         if (lastSuccessSnapshotTickCount == irsdkHeader.getCurBufTickCount()) {
@@ -136,25 +166,23 @@ public final class Javirsdk {
 
         return false;
     }
-    public void waitForNewData() throws IllegalStateException {
-        if (!isConnected()) {
-            throw new IllegalStateException("Yet to connect to iRacing telemetry data. Have you called openConnection() first?");
-        } else if (!isSimRunning()) {
-            throw new IllegalStateException("iRacing not running.");
-        }
-
-        if (!getNewData()) {
-            Kernel32.INSTANCE.WaitForSingleObject(newDataEvent, irsdkHeader.getCurBufTickCount());
-            getNewData();
+    public void waitForNewData() throws JavirsdkIRacingNotRunningException, JavirsdkIRacingClosingException {
+        try { //We might get an IRacingNotRunning exception anywhere here
+            if (!getNewData()) {
+                Kernel32.INSTANCE.WaitForSingleObject(newDataEvent, irsdkHeader.getCurBufTickCount());
+                getNewData();
+            }    
+        } catch(JavirsdkIRacingNotRunningException e) {
+            if (lastSuccessSnapshotTickCount == Integer.MAX_VALUE) { //If the tickCount didn't change since initialization, iRacing never ran
+                throw e;
+            } else { //If it has, then iRacing must have closed
+                throw new JavirsdkIRacingClosingException("iRacing just closed...");
+            }
         }
     }
 
-    //Handler management
-    public final JavirsdkHandlerExecutor handlerExecutor = new JavirsdkHandlerExecutor();
-
     //Variable retrival
     private final HashMap<String, IRSDKVarHeader> cachedVarHeaders = new HashMap<>();
-
     public IRSDKVarHeader getVarHeaderByName(String name) throws IllegalArgumentException {
         if (cachedVarHeaders.containsKey(name)) {
             return cachedVarHeaders.get(name);

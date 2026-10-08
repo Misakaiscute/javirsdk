@@ -1,11 +1,10 @@
 package javirsdk.handler;
 
 import javirsdk.Javirsdk;
+import javirsdk.exceptions.JavirsdkIRacingClosingException;
+import javirsdk.exceptions.JavirsdkIRacingNotRunningException;
 
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 public record JavirsdkRunner(
     LinkedList<JavirsdkHandler> handlers
@@ -13,11 +12,18 @@ public record JavirsdkRunner(
     @Override
     public void run() {
         while (!handlers.isEmpty()) {
-            Javirsdk.getInstance().waitForNewData();
-            synchronized (handlers) {
-                for (JavirsdkHandler handler : handlers) {
-                    handler.execute();
+            try {
+                Javirsdk.getInstance().waitForNewData();
+                synchronized (handlers) {
+                    for (JavirsdkHandler handler : handlers) {
+                        handler.execute();
+                    }
                 }
+            } catch (JavirsdkIRacingClosingException e) {
+                Javirsdk.getInstance().onIRacingClosing();
+                return;
+            } catch (JavirsdkIRacingNotRunningException e) {
+                return;
             }
         }
     }

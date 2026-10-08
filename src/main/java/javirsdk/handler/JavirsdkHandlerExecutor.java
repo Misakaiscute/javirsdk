@@ -16,11 +16,17 @@ public final class JavirsdkHandlerExecutor {
         if (entries.contains(handler)) {
             throw new IllegalArgumentException("Handler id already in use.");
         }
-        synchronized (entries) {
-            entries.add(handler);
-        }
-        if (Javirsdk.getInstance().isConnected()) {
-            executor.start();
+        if (entries.isEmpty()) {
+            synchronized (entries) {
+                entries.add(handler);
+            }
+            if (Javirsdk.getInstance().isConnected()) {
+                executor.start();
+            }
+        } else {
+            synchronized (entries) {
+                entries.add(handler);
+            }
         }
     }
     public void unbind(JavirsdkHandler handler) throws IllegalArgumentException {
@@ -29,7 +35,7 @@ public final class JavirsdkHandlerExecutor {
             removed = entries.remove(handler);
         }
         if (!removed) {
-            throw new IllegalArgumentException("So handler found with id %s.".formatted(handler.id));
+            throw new IllegalArgumentException("No handler found with id %s.".formatted(handler.id));
         }
     }
     public void start() {

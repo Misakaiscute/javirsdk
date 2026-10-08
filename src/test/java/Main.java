@@ -8,6 +8,16 @@ import javirsdk.variable.JavirsdkVariableStateSnapshot;
 public class Main {
     public static void main(String[] args) throws InterruptedException {
         Javirsdk sdk = Javirsdk.getInstance();
+        
+        sdk.setOnIRacingClosingAction(() -> {
+            System.out.println("iRacing closed"); 
+        });
+
+        var handler = new JavirsdkHandler("print_speed", (JavirsdkVariableStateSnapshot state) -> {
+            System.out.printf("Speed: %.2f\n", state.getSpeed() * 3.6);
+        }, JavirsdkVariable.SPEED);
+        sdk.handlerExecutor.bind(handler);
+
         while (true) {
             while (!sdk.isSimRunning()) {
                 System.out.println("Waiting for iRacing to open...");
@@ -18,10 +28,6 @@ public class Main {
                 }   
             }
             System.out.println("Connected to iRacing!");
-            var handler = new JavirsdkHandler("print_speed", (JavirsdkVariableStateSnapshot state) -> {
-                System.out.printf("Speed: %.2f\n", state.getSpeed() * 3.6);
-            }, JavirsdkVariable.SPEED);
-            sdk.handlerExecutor.bind(handler);
         }
     }
 }
