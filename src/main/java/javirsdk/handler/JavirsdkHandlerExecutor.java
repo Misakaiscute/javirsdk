@@ -41,6 +41,6 @@ public final class JavirsdkHandlerExecutor {
         }
     }
     public void start() {
-        executor.submit(runner);
+        executor.execute(runner);
     }
 }

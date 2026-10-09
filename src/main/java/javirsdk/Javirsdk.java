@@ -16,13 +16,14 @@ import javirsdk.handler.JavirsdkHandlerExecutor;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.function.Consumer;
 
 /**
  * Javirsdk is the singleton main entrypoint for the javirsdk package
  *
  * Main interfaces for most users are:
- *    '.openConnection',
- *    '.closeConnection',
+ *    '.connect',
+ *    '.disconnect',
  *    and handler binding with '.handlerExecutor'.
  */
 public final class Javirsdk {
@@ -56,7 +57,7 @@ public final class Javirsdk {
      */
     public void onIRacingClosing() {
         actionOnException.run();
-        closeConnection();
+        disconnect();
     }
 
     //Opening of required channels
@@ -65,13 +66,21 @@ public final class Javirsdk {
     private HANDLE newDataEvent;
     private int broadcastMsgId = -1;
     private IRSDKHeader irsdkHeader;
+    /**
+     * @return if the connection is open to the shared memory region of iRacing,
+     * returns true
+     */
     public boolean isConnected() {
         return memMappedFile != null && buf != null && newDataEvent != null;
     }
+    /**
+     * @return if the connection is open to the shared memory region,
+     * returns true if the iRacing simulator is running
+     */
     public boolean isSimRunning() {
         return isConnected() && (irsdkHeader.getStatus() & 1) != 0;
     }
-    public void openConnection() throws IOException {
+    public void connect() throws IOException {
         final String IRSDKMemMapFileName = "Local\\IRSDKMemMapFileName";
         final String IRSDKDataValidEvent = "Local\\IRSDKDataValidEvent";
         final String IRSDKBroadcastMsgName = "IRSDK_BROADCASTMSG";
@@ -84,34 +93,39 @@ public final class Javirsdk {
         if (buf == null) {
             throw new IOException("Unable to load telemetry file into memory.");
         }
-        irsdkHeader = new IRSDKHeader(buf);
-        varBufSnapshot = new Memory(irsdkHeader.getBufLen());
-
         newDataEvent = Kernel32.INSTANCE.OpenEvent(WinNT.SYNCHRONIZE, false, IRSDKDataValidEvent);
         if (newDataEvent == null) {
             throw new IOException("Unable to subscribe to new data event.");
         }
         broadcastMsgId = User32.INSTANCE.RegisterWindowMessage(IRSDKBroadcastMsgName);
-        if (broadcastMsgId == -1) {
+        if (broadcastMsgId == 0) {
             throw new IOException("Unable to open message channel.");
         }
+        //These will not throw an exception, when any other app (f.e. Trading Paints or Garage61)
+        //keeps the memory mapped file open.
+        //Fallback:
+        irsdkHeader = new IRSDKHeader(buf);
+        if (irsdkHeader.getBufLen() <= 0) {
+            disconnect();
+            throw new IOException("SDK buffer empty.");
+        } else if ((irsdkHeader.getStatus() & 1) == 0) {
+            throw new IOException("SDK available, iRacing not running.");
+        }
+        varBufSnapshot = new Memory(irsdkHeader.getBufLen());
 
         //If there are waiting handlers, start running them
         if (handlerExecutor.hasHandlers()) {
             handlerExecutor.start();
         }
     }
-    public void closeConnection() {
-        if (newDataEvent != null) {
-            Kernel32.INSTANCE.CloseHandle(newDataEvent);
+    public void disconnect() {
+        if (Kernel32.INSTANCE.CloseHandle(newDataEvent)) {
             newDataEvent = null;
         }
-        if (buf != null) {
-            Kernel32.INSTANCE.UnmapViewOfFile(buf);
+        if (Kernel32.INSTANCE.UnmapViewOfFile(buf)) {
             buf = null;
         }
-        if (memMappedFile != null) {
-            Kernel32.INSTANCE.CloseHandle(memMappedFile);
+        if (Kernel32.INSTANCE.CloseHandle(memMappedFile)) {;
             memMappedFile = null;
         }
         irsdkHeader = null;
@@ -120,6 +134,37 @@ public final class Javirsdk {
         lastSuccessSnapshotTickCount = Integer.MAX_VALUE;
         varBufSnapshot = null;
         cachedVarHeaders.clear();
+    }
+    public void run(Runnable whileConnected, Runnable whileDisconnected, Runnable whileSimRunning, Runnable whileSimNotRunning, Consumer<IOException> onConnectionError, int connectionRetryMs) {
+        Runnable connAct = whileConnected == null ? () -> {} : whileConnected;
+        Runnable disconnAct = whileDisconnected == null ? () -> {} : whileDisconnected;
+        Runnable runAct = whileSimRunning == null ? () -> {} : whileSimRunning;
+        Runnable idlingAct = whileSimNotRunning == null ? () -> {} : whileSimNotRunning;
+        Consumer<IOException> onConErr = onConnectionError == null ? (IOException e) -> {} : onConnectionError;
+
+        while (true) {
+            if (isConnected()) {
+                connAct.run();
+                if (isSimRunning()) {
+                    runAct.run();
+                } else {
+                    idlingAct.run();
+                }
+            } else {
+                disconnAct.run();
+                try {
+                    connect();
+                } catch (IOException e) {
+                    onConErr.accept(e);
+                } finally {
+                    try {
+                        Thread.sleep(connectionRetryMs);
+                    } catch (InterruptedException e) {
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     //Message broadcasting
@@ -172,7 +217,7 @@ public final class Javirsdk {
                 Kernel32.INSTANCE.WaitForSingleObject(newDataEvent, irsdkHeader.getCurBufTickCount());
                 getNewData();
             }    
-        } catch(JavirsdkIRacingNotRunningException e) {
+        } catch (JavirsdkIRacingNotRunningException e) {
             if (lastSuccessSnapshotTickCount == Integer.MAX_VALUE) { //If the tickCount didn't change since initialization, iRacing never ran
                 throw e;
             } else { //If it has, then iRacing must have closed

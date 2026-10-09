@@ -18,15 +18,6 @@ public class Main {
         }, JavirsdkVariable.SPEED);
         sdk.handlerExecutor.bind(handler);
 
-        while (true) {
-            while (!sdk.isSimRunning()) {
-                System.out.println("Waiting for iRacing to open...");
-                try {
-                    sdk.openConnection();
-                } catch (IOException e) {
-                    System.out.println(e.getMessage());
-                }   
-            }
-        }
+        sdk.run(null, null, null, null, null, 1000);
     }
 }
