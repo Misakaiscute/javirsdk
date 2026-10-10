@@ -36,7 +36,83 @@ public final class Javirsdk {
         return INSTANCE;
     }
     //Handler management
+    /**
+     * Allows binds tasks to run for each time iRacing signals new data available
+     * in its buffer.
+     *
+     * Starts automatically using RunHelper, needs to be started manually otherwise.
+     */
     public final JavirsdkHandlerExecutor handlerExecutor = new JavirsdkHandlerExecutor();
+    //Run helper
+    public static final class RunHelper {
+        private final Runnable whileDisconnected;
+        private final Runnable whileIdling;
+        private final Consumer<IOException> onConnectionErr; 
+        private final int connectionRetryIntervalMs;
+
+        private RunHelper(Runnable whileDisconnected, Runnable whileIdling, Consumer<IOException> onConnectionErr, int connectionRetryIntervalMs) {
+            this.whileDisconnected = whileDisconnected;
+            this.whileIdling = whileIdling;
+            this.onConnectionErr = onConnectionErr;
+            this.connectionRetryIntervalMs = connectionRetryIntervalMs;
+        }
+        public static final class Builder {
+            private Runnable hWhileDisconnected = () -> {};
+            public Builder setWhileDisconnected(Runnable hWhileDisconnected) {
+                this.hWhileDisconnected = hWhileDisconnected;
+                return this;
+            }
+
+            private Runnable hWhileIdling = () -> {};
+            public Builder setWhileIdling(Runnable hWhileIdling) {
+                this.hWhileIdling = hWhileIdling;
+                return this;
+            }
+
+            private Consumer<IOException> hOnConnectionErr = (IOException e) -> {};
+            public Builder setOnConnectionErr(Consumer<IOException> hOnConnectionErr) {
+                this.hOnConnectionErr = hOnConnectionErr;
+                return this;
+            }
+
+            private int hConnectionRetryIntervalMs = 1000;
+            public Builder setConnectionRetryIntervalMs(int hConnectionRetryIntervalMs) {
+                this.hConnectionRetryIntervalMs = hConnectionRetryIntervalMs;
+                return this;
+            }
+   
+            public RunHelper build() {
+                return new RunHelper(hWhileDisconnected, hWhileIdling, hOnConnectionErr, hConnectionRetryIntervalMs);
+            } 
+        }
+        public void run() {
+            Javirsdk sdk = Javirsdk.getInstance();
+            while (true) {
+                if (sdk.isConnected()) {
+                    if (!sdk.isSimRunning()) {
+                        whileIdling.run();
+                    }
+                } else {
+                    whileDisconnected.run();
+                    try {
+                        sdk.connect();
+                        //If there are waiting handlers, start running them
+                        if (sdk.handlerExecutor.hasHandlers()) {
+                            sdk.handlerExecutor.start();
+                        }
+                    } catch (IOException e) {
+                        onConnectionErr.accept(e);
+                    } catch (JavirsdkIRacingNotRunningException e) {} finally {
+                        try {
+                            Thread.sleep(connectionRetryIntervalMs);
+                        } catch (InterruptedException e) {
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     //Exception handling
     private Runnable actionOnException = () -> {};
@@ -80,6 +156,7 @@ public final class Javirsdk {
     public boolean isSimRunning() {
         return isConnected() && (irsdkHeader.getStatus() & 1) != 0;
     }
+
     public void connect() throws IOException {
         final String IRSDKMemMapFileName = "Local\\IRSDKMemMapFileName";
         final String IRSDKDataValidEvent = "Local\\IRSDKDataValidEvent";
@@ -113,10 +190,7 @@ public final class Javirsdk {
         }
         varBufSnapshot = new Memory(irsdkHeader.getBufLen());
 
-        //If there are waiting handlers, start running them
-        if (handlerExecutor.hasHandlers()) {
-            handlerExecutor.start();
-        }
+        
     }
     public void disconnect() {
         if (Kernel32.INSTANCE.CloseHandle(newDataEvent)) {
@@ -134,37 +208,6 @@ public final class Javirsdk {
         lastSuccessSnapshotTickCount = Integer.MAX_VALUE;
         varBufSnapshot = null;
         cachedVarHeaders.clear();
-    }
-    public void run(Runnable whileConnected, Runnable whileDisconnected, Runnable whileSimRunning, Runnable whileSimNotRunning, Consumer<IOException> onConnectionError, int connectionRetryMs) {
-        Runnable connAct = whileConnected == null ? () -> {} : whileConnected;
-        Runnable disconnAct = whileDisconnected == null ? () -> {} : whileDisconnected;
-        Runnable runAct = whileSimRunning == null ? () -> {} : whileSimRunning;
-        Runnable idlingAct = whileSimNotRunning == null ? () -> {} : whileSimNotRunning;
-        Consumer<IOException> onConErr = onConnectionError == null ? (IOException e) -> {} : onConnectionError;
-
-        while (true) {
-            if (isConnected()) {
-                connAct.run();
-                if (isSimRunning()) {
-                    runAct.run();
-                } else {
-                    idlingAct.run();
-                }
-            } else {
-                disconnAct.run();
-                try {
-                    connect();
-                } catch (IOException e) {
-                    onConErr.accept(e);
-                } finally {
-                    try {
-                        Thread.sleep(connectionRetryMs);
-                    } catch (InterruptedException e) {
-                        return;
-                    }
-                }
-            }
-        }
     }
 
     //Message broadcasting

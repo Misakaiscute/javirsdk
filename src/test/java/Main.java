@@ -1,5 +1,3 @@
-import java.io.IOException;
-
 import javirsdk.Javirsdk;
 import javirsdk.handler.JavirsdkHandler;
 import javirsdk.variable.JavirsdkVariable;
@@ -18,6 +16,10 @@ public class Main {
         }, JavirsdkVariable.SPEED);
         sdk.handlerExecutor.bind(handler);
 
-        sdk.run(null, null, null, null, null, 1000);
+        Javirsdk.RunHelper runner = new Javirsdk.RunHelper.Builder()
+            .setConnectionRetryIntervalMs(500)
+            .build();
+
+        runner.run();
     }
 }
