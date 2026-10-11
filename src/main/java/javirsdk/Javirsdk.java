@@ -45,27 +45,44 @@ public final class Javirsdk {
     public final JavirsdkHandlerExecutor handlerExecutor = new JavirsdkHandlerExecutor();
     //Run helper
     public static final class RunHelper {
-        private final Runnable whileDisconnected;
-        private final Runnable whileIdling;
+        private final Runnable onDisconnect;
+        private final Runnable onConnect;
+        private final Runnable onSimClose;
+        private final Runnable onSimOpen;
         private final Consumer<IOException> onConnectionErr; 
         private final int connectionRetryIntervalMs;
 
-        private RunHelper(Runnable whileDisconnected, Runnable whileIdling, Consumer<IOException> onConnectionErr, int connectionRetryIntervalMs) {
-            this.whileDisconnected = whileDisconnected;
-            this.whileIdling = whileIdling;
+        private volatile boolean isConnected = false;
+        private volatile boolean isSimRunning = false;
+
+        private RunHelper(Runnable onDisconnect, Runnable onConnect, Runnable onSimClose, Runnable onSimOpen, Consumer<IOException> onConnectionErr, int connectionRetryIntervalMs) {
+            this.onDisconnect = onDisconnect;
+            this.onConnect = onConnect;
+            this.onSimClose = onSimClose;
+            this.onSimOpen = onSimOpen;
             this.onConnectionErr = onConnectionErr;
             this.connectionRetryIntervalMs = connectionRetryIntervalMs;
         }
+
         public static final class Builder {
-            private Runnable hWhileDisconnected = () -> {};
-            public Builder setWhileDisconnected(Runnable hWhileDisconnected) {
-                this.hWhileDisconnected = hWhileDisconnected;
+            private Runnable hOnDisconnect = () -> {};
+            public Builder setOnDisconnect(Runnable hOnDisconnect) {
+                this.hOnDisconnect = hOnDisconnect;
                 return this;
             }
-
-            private Runnable hWhileIdling = () -> {};
-            public Builder setWhileIdling(Runnable hWhileIdling) {
-                this.hWhileIdling = hWhileIdling;
+            private Runnable hOnConnect = () -> {};
+            public Builder setOnConnect(Runnable hOnConnect) {
+                this.hOnConnect = hOnConnect;
+                return this;
+            }
+            private Runnable hOnSimClose = () -> {};
+            public Builder setOnSimClose(Runnable hOnSimClose) {
+                this.hOnSimClose = hOnSimClose;
+                return this;
+            }
+            private Runnable hOnSimOpen = () -> {};
+            public Builder setOnSimOpen(Runnable hOnSimOpen) {
+                this.hOnSimOpen = hOnSimOpen;
                 return this;
             }
 
@@ -82,18 +99,33 @@ public final class Javirsdk {
             }
    
             public RunHelper build() {
-                return new RunHelper(hWhileDisconnected, hWhileIdling, hOnConnectionErr, hConnectionRetryIntervalMs);
+                return new RunHelper(hOnDisconnect, hOnConnect, hOnSimClose, hOnSimOpen, hOnConnectionErr, hConnectionRetryIntervalMs);
             } 
         }
         public void run() {
             Javirsdk sdk = Javirsdk.getInstance();
             while (true) {
                 if (sdk.isConnected()) {
-                    if (!sdk.isSimRunning()) {
-                        whileIdling.run();
+                    if (!this.isConnected) {
+                        this.isConnected = true;
+                        this.onConnect.run();
+                    }
+                    if (sdk.isSimRunning()) {
+                        if (!this.isSimRunning) {
+                            this.isSimRunning = true;
+                            this.onSimOpen.run();
+                        }
+                    } else {
+                        if (this.isSimRunning) {
+                            this.isSimRunning = false;
+                            this.onSimClose.run();
+                        }
                     }
                 } else {
-                    whileDisconnected.run();
+                    if (this.isConnected) {
+                        this.isConnected = false;
+                        this.onDisconnect.run();
+                    }
                     try {
                         sdk.connect();
                         //If there are waiting handlers, start running them

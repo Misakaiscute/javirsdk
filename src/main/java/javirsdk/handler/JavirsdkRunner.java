@@ -1,8 +1,6 @@
 package javirsdk.handler;
 
 import javirsdk.Javirsdk;
-import javirsdk.exceptions.JavirsdkIRacingClosingException;
-import javirsdk.exceptions.JavirsdkIRacingNotRunningException;
 
 import java.util.LinkedList;
 
@@ -19,10 +17,7 @@ public record JavirsdkRunner(
                         handler.execute();
                     }
                 }
-            } catch (JavirsdkIRacingClosingException e) {
-                Javirsdk.getInstance().onIRacingClosing();
-                return;
-            } catch (JavirsdkIRacingNotRunningException e) {
+            } catch (Exception e) {
                 return;
             }
         }

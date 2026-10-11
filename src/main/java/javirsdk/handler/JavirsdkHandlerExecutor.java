@@ -58,7 +58,7 @@ public final class JavirsdkHandlerExecutor {
     public void unbind(String id) throws IllegalArgumentException {
         int item_idx;
         synchronized (entries) {
-            item_idx = linkedListFind(entries, (JavirsdkHandler h) -> { return h.id == id; });
+            item_idx = linkedListFind(entries, (JavirsdkHandler h) -> { return h.getId() == id; });
             entries.remove(item_idx);
         }
         if (item_idx == -1) {

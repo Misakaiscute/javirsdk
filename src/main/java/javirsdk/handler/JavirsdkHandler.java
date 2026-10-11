@@ -7,24 +7,47 @@ import javirsdk.variable.JavirsdkVariableStateSnapshot;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 public class JavirsdkHandler {
-    public final String id;
+    private final String id;
+    public String getId() {
+        return this.id;
+    }
     private final JavirsdkVariableStateSnapshot stateSnapshot;
     private final Consumer<JavirsdkVariableStateSnapshot> handler;
-    private final HashSet<JavirsdkVariable> variables = new HashSet<>();
+    private final HashSet<JavirsdkVariable> variables;
 
-    public JavirsdkHandler(String id, Consumer<JavirsdkVariableStateSnapshot> handler, JavirsdkVariable ... requiredVariables) {
+    private JavirsdkHandler(String id, Consumer<JavirsdkVariableStateSnapshot> handler, HashSet<JavirsdkVariable> reqVars) {
         this.id = id;
         this.handler = handler;
-
-        variables.addAll(Arrays.asList(requiredVariables));
+        this.variables = reqVars;
 
         JavirsdkVariableStateSnapshot.Builder builder = new JavirsdkVariableStateSnapshot.Builder();
         registerVariables(builder);
         this.stateSnapshot = builder.build();
+    }
+
+    public static final class Builder {
+        private String hId;
+        public Builder setId(String hId) {
+            this.hId = hId;
+            return this;
+        }
+        private Consumer<JavirsdkVariableStateSnapshot> hHandler;
+        public Builder setHandler(Consumer<JavirsdkVariableStateSnapshot> handler) {
+            this.hHandler = handler;
+            return this;
+        }
+        private HashSet<JavirsdkVariable> hVariables = new HashSet<>();
+        public Builder setRequiredVariables(JavirsdkVariable ... reqVars) {
+            this.hVariables.addAll(Arrays.asList(reqVars));
+            return this;
+        }
+
+        public JavirsdkHandler build() {
+            return new JavirsdkHandler(hId, hHandler, hVariables);
+        }
     }
 
     private void registerVariables(JavirsdkVariableStateSnapshot.Builder builder) {
@@ -76,17 +99,5 @@ public class JavirsdkHandler {
         updateVariables();
         //Feed the updated state to the handler
         handler.accept(stateSnapshot);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof JavirsdkHandler other)) return false;
-        return Objects.equals(id, other.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 }
