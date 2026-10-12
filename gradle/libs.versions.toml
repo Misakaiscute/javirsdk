@@ -1,0 +1,15 @@
+[versions]
+jna = "5.19.1"
+junit = "5.10.0"
+
+kotlin-jvm = "2.2.20"
+
+[libraries]
+jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
+jna-platform = { group = "net.java.dev.jna", name = "jna-platform", version.ref = "jna" }
+junit = { group = "org.junit", name = "junit-bom", version.ref = "junit" }
+junit-platform = { group = "org.junit.platform", name = "junit-platform-launcher" }
+jupiter = { group = "org.junit.jupiter", name = "junit-jupiter" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-jvm" }
