@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 
 public final class JavirsdkHandlerExecutor {
-    private final LinkedList<JavirsdkHandler> entries = new LinkedList<>();
+    private final LinkedList<JavirsdkHandler<?>> entries = new LinkedList<>();
     /**
      * @return true if there's one or more handlers bound
      */
@@ -29,7 +29,7 @@ public final class JavirsdkHandlerExecutor {
      * @param handler to be run when buffer is written
      * @throws IllegalArgumentException if handler exists with the same id
      */
-    public void bind(JavirsdkHandler handler) throws IllegalArgumentException {
+    public void bind(JavirsdkHandler<?> handler) throws IllegalArgumentException {
         if (entries.contains(handler)) {
             throw new IllegalArgumentException("Handler id already in use.");
         }
@@ -58,7 +58,7 @@ public final class JavirsdkHandlerExecutor {
     public void unbind(String id) throws IllegalArgumentException {
         int item_idx;
         synchronized (entries) {
-            item_idx = linkedListFind(entries, (JavirsdkHandler h) -> { return h.getId() == id; });
+            item_idx = linkedListFind(entries, (JavirsdkHandler<?> h) -> { return h.getId() == id; });
             entries.remove(item_idx);
         }
         if (item_idx == -1) {

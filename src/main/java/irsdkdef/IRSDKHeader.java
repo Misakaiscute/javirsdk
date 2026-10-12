@@ -22,7 +22,7 @@ public record IRSDKHeader (
     public int getSessionInfoLen() {
         return buf.getInt(16);
     } // Length in bytes of session info string
-    public int sessionInfoOffset() {
+    public int getSessionInfoOffset() {
         return buf.getInt(20);
     } // Session info, encoded in YAML format
 

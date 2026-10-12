@@ -1,12 +1,12 @@
 import javirsdk.Javirsdk;
-import javirsdk.handler.JavirsdkHandler;
+import javirsdk.handler.JavirsdkVariableHandler;
 import javirsdk.variable.JavirsdkVariable;
 
 public class Main {
     public static void main(String[] args) throws InterruptedException {
         Javirsdk sdk = Javirsdk.getInstance();
 
-        JavirsdkHandler handler = new JavirsdkHandler.Builder()
+        JavirsdkVariableHandler handler = new JavirsdkVariableHandler.Builder()
             .setId("print_speed")
             .setRequiredVariables(JavirsdkVariable.SPEED)
             .setHandler((state) -> { System.out.printf("Speed: %.2f", state.getSpeed() * 3.6);} )

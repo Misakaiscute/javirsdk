@@ -22,8 +22,7 @@ import java.util.function.Consumer;
  * Javirsdk is the singleton main entrypoint for the javirsdk package
  *
  * Main interfaces for most users are:
- *    '.connect',
- *    '.disconnect',
+ *    'RunHelper.Builder()',
  *    and handler binding with '.handlerExecutor'.
  */
 public final class Javirsdk {
@@ -144,28 +143,6 @@ public final class Javirsdk {
                 }
             }
         }
-    }
-
-    //Exception handling
-    private Runnable actionOnException = () -> {};
-    /**
-     * Set the lambda to run before closing the connection 
-     * with 'onIRacingClosing'
-     * @param a Accepts a lambda expression or null (which is equal to an empty lambda)
-     */
-    public void setOnIRacingClosingAction(Runnable a) {
-        if (a == null) {
-            actionOnException = () -> {};
-        }
-        actionOnException = a;
-    }
-    /**
-     * Closes the connection to the sdk and runs the action
-     * specified with 'setOnIRacingClosingAction'
-     */
-    public void onIRacingClosing() {
-        actionOnException.run();
-        disconnect();
     }
 
     //Opening of required channels
@@ -322,5 +299,14 @@ public final class Javirsdk {
             varHeaders.add(varHeader);
         }
         return varHeaders.toArray(IRSDKVarHeader[]::new);
+    }
+
+    //Session info
+    public String getSessionString() {
+        var sessionString = buf.getCharArray(irsdkHeader.getSessionInfoOffset(), irsdkHeader.getSessionInfoLen());
+        return new String(sessionString);
+    }
+    public int getSessionTick() {
+        return irsdkHeader.getSessionInfoUpdate();
     }
 }
