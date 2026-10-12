@@ -26,6 +26,8 @@ repositories {
 dependencies {
     implementation(libs.jna)
     implementation(libs.jna.platform)
+    implementation(libs.jackson.core)
+    implementation(libs.jackson.ext.yaml)
     testImplementation(platform(libs.junit))
     testImplementation(libs.jupiter)
     testRuntimeOnly(libs.junit.platform)
