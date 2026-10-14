@@ -1,4 +1,5 @@
 plugins {
+    id 'eclipse'
     id 'java'
     alias(libs.plugins.kotlin.jvm)
 }
@@ -27,6 +28,8 @@ dependencies {
     implementation(libs.jna)
     implementation(libs.jna.platform)
     implementation(libs.jackson.core)
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.annotations)
     implementation(libs.jackson.ext.yaml)
     testImplementation(platform(libs.junit))
     testImplementation(libs.jupiter)
@@ -66,9 +69,35 @@ tasks.register('scoutVariables', JavaExec) {
 
     dependsOn 'classes'                       // method call, not setDependsOn { }
     classpath = sourceSets.utils.runtimeClasspath
-    mainClass = 'javirsdk.JavirsdkTelemetryVariableScouter'
+    mainClass = 'javirsdk.variable.JavirsdkTelemetryVariableScouter'
 
     args = ['--flag', 'value']                // property assignment
     standardInput = System.in
     standardOutput = System.out
+}
+
+tasks.register('registerSessionGroup', JavaExec) {
+    group = 'custom'
+    description = 'Registers a new session group to another session group. Takes in the name of the new group, and optionally the root to add it to. If no root specified, Uses the default group (SessionRoot).'
+
+    dependsOn 'classes'
+    classpath = sourceSets.utils.runtimeClasspath
+    mainClass = 'javirsdk.variable.JavirsdkSessionGroupRegister'
+
+    args = ['--flag', 'value']
+    standardInput = System.In
+    standardOutput = System.Out
+}
+
+tasks.register('registerSessionVariable', JavaExec) {
+    group = 'custom'
+    description = 'Registers a variable to be added to to a session group. Takes in the name of the variable (as it appears in the iRacing session string), the type of the variable, and the session group to add it to.'
+
+    dependsOn 'classes'
+    classpath = sourceSets.utils.runtimeClasspath
+    mainClass = 'javirsdk.variable.JavirsdkSessionGroupRegister'
+
+    args = ['--flag', 'value']
+    standardInput = System.In
+    standardOutput = System.Out
 }

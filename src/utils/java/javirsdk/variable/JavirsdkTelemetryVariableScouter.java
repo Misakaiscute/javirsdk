@@ -1,6 +1,7 @@
-package javirsdk;
+package javirsdk.variable;
 
 import irsdkdef.IRSDKVarHeader;
+import javirsdk.Javirsdk;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -76,8 +77,10 @@ public final class JavirsdkTelemetryVariableScouter {
 
     public static void main(String[] args) {
         try {
-            Javirsdk.getInstance().openConnection();
-            Javirsdk.getInstance().waitForNewData();
+            Javirsdk.getInstance().connect();
+            try {
+                Javirsdk.getInstance().waitForNewData();
+            } catch (Exception e) {}
             IRSDKVarHeader[] varHeaders = Javirsdk.getInstance().scoutVarHeaderNames();
 
             StringBuilder JavirsdkVariableEnumContent = new StringBuilder();
@@ -124,12 +127,13 @@ public final class JavirsdkTelemetryVariableScouter {
         String getter = "public %s get%s() { return this.%s; }".formatted(type, varHeader.getName(), fieldName);
         String setter = "public void set%s(%s v) { this.%s = v; }".formatted(varHeader.getName(), type, fieldName);
 
-        StringBuilder entry = new StringBuilder();
-        entry.append(backingField).append("\n");
-        entry.append(getter).append("\n");
-        entry.append(setter).append("\n");
+        String entry = new StringBuilder()
+            .append(backingField).append("\n")
+            .append(getter).append("\n")
+            .append(setter).append("\n")
+            .toString();
 
-        return entry.toString();
+        return entry;
     }
     private static String produceVariableStateSnapshotEntryBuilder(IRSDKVarHeader varHeader) {
         /*public Builder setSessionTime(Double[] v) {
