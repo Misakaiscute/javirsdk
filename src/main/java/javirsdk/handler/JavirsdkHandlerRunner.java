@@ -4,7 +4,7 @@ import javirsdk.Javirsdk;
 
 import java.util.LinkedList;
 
-public record JavirsdkRunner(
+public record JavirsdkHandlerRunner (
     LinkedList<JavirsdkHandler<?>> handlers
 ) implements Runnable {
     @Override

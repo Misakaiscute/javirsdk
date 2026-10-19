@@ -2,19 +2,24 @@ package javirsdk.handler;
 
 import java.util.function.Consumer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.RuntimeJsonMappingException;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
 import javirsdk.Javirsdk;
+import javirsdk.variable.SessionRoot;
 
 public final class JavirsdkSessionHandler implements JavirsdkHandler<String>{
+    private static int latestTick = -1;
+    private static SessionRoot latestState = null;
+
     private final String id;
     @Override
-    public String getId() {
-        return this.id;
-    }
-    private int latestSessionStringTick = -1;
-    private String latestSessionString;
+    public String getId() { return this.id; }
+    private final Consumer<SessionRoot> handler;
 
-    private final Consumer<String> handler;
-    private JavirsdkSessionHandler(String id, Consumer<String> handler) {
+    private JavirsdkSessionHandler(String id, Consumer<SessionRoot> handler) {
         this.id = id;
         this.handler = handler;
     }
@@ -25,8 +30,8 @@ public final class JavirsdkSessionHandler implements JavirsdkHandler<String>{
             this.hId = hId;
             return this;
         }
-        private Consumer<String> hHandler;
-        public Builder setHandler(Consumer<String> handler) {
+        private Consumer<SessionRoot> hHandler;
+        public Builder setHandler(Consumer<SessionRoot> handler) {
             this.hHandler = handler;
             return this;
         }
@@ -36,15 +41,25 @@ public final class JavirsdkSessionHandler implements JavirsdkHandler<String>{
         }
     }
 
+    private static void parseSessionString(String sessionStr) {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        try {
+            latestState = mapper.readValue(sessionStr, SessionRoot.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeJsonMappingException(e.getMessage());
+        }
+    }
+
     @Override
     public void execute() {
-        //Check if the session string was updated
-        //If it was, run the handler provided by the user
         int javirsdkSessionStringTick = Javirsdk.getInstance().getSessionTick();
-        if (javirsdkSessionStringTick != this.latestSessionStringTick) {
-            this.latestSessionStringTick = javirsdkSessionStringTick;
-            this.latestSessionString = Javirsdk.getInstance().getSessionString();
-            this.handler.accept(latestSessionString);
+        //Check if the session string was updated
+        if (javirsdkSessionStringTick != JavirsdkSessionHandler.latestTick) {
+            //If it was, we re-parse syncronously
+            JavirsdkSessionHandler.latestTick = javirsdkSessionStringTick;
+            JavirsdkSessionHandler.parseSessionString(Javirsdk.getInstance().getSessionString());
         }
+        //Lastly, run the user provided handler with the 100% latest session state
+        this.handler.accept(latestState);
     }
 }

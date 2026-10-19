@@ -16,7 +16,7 @@ public final class JavirsdkHandlerExecutor {
     public boolean hasHandlers() {
         return !entries.isEmpty();
     }
-    private final JavirsdkRunner runner = new JavirsdkRunner(entries);
+    private final JavirsdkHandlerRunner runner = new JavirsdkHandlerRunner(entries);
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     /**

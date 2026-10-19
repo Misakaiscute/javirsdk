@@ -85,8 +85,8 @@ tasks.register('registerSessionGroup', JavaExec) {
     mainClass = 'javirsdk.variable.JavirsdkSessionGroupRegister'
 
     args = ['--flag', 'value']
-    standardInput = System.In
-    standardOutput = System.Out
+    standardInput = System.in
+    standardOutput = System.out
 }
 
 tasks.register('registerSessionVariable', JavaExec) {
@@ -95,9 +95,9 @@ tasks.register('registerSessionVariable', JavaExec) {
 
     dependsOn 'classes'
     classpath = sourceSets.utils.runtimeClasspath
-    mainClass = 'javirsdk.variable.JavirsdkSessionGroupRegister'
+    mainClass = 'javirsdk.variable.JavirsdkSessionVariableRegister'
 
     args = ['--flag', 'value']
-    standardInput = System.In
-    standardOutput = System.Out
+    standardInput = System.in
+    standardOutput = System.out
 }
