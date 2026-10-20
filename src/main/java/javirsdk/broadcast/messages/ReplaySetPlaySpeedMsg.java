@@ -11,6 +11,7 @@ public class ReplaySetPlaySpeedMsg extends JavirsdkBroadcastMsg {
     }
     public enum ReplaySpeedMultiplierCommand {
         Backward16X(-16),
+        Backward12X(-12),
         Backward8X(-8),
         Backward4X(-4),
         Backward2X(-2),
@@ -20,6 +21,7 @@ public class ReplaySetPlaySpeedMsg extends JavirsdkBroadcastMsg {
         Forward2X(2),
         Forward4X(4),
         Forward8X(8),
+        Forward12X(12),
         Forward16X(16);
 
         private final int value;

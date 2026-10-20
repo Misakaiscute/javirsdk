@@ -1,6 +1,6 @@
 package javirsdk.variable;
 
-import irsdkdef.IRSDKVarHeader;
+import javirsdk.irsdkdef.IRSDKVarHeader;
 import javirsdk.Javirsdk;
 
 import java.io.IOException;

@@ -5,13 +5,14 @@ import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.*;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 
+import javirsdk.irsdkdef.IRSDKHeader;
+import javirsdk.irsdkdef.IRSDKVarBuf;
+import javirsdk.irsdkdef.IRSDKVarHeader;
+
 import javirsdk.broadcast.JavirsdkBroadcastMsg;
 import javirsdk.exceptions.JavirsdkIRacingClosingException;
 import javirsdk.exceptions.JavirsdkIRacingNotRunningException;
 import javirsdk.handler.JavirsdkHandlerExecutor;
-import irsdkdef.IRSDKHeader;
-import irsdkdef.IRSDKVarBuf;
-import irsdkdef.IRSDKVarHeader;
 
 import java.io.IOException;
 import java.util.HashMap;

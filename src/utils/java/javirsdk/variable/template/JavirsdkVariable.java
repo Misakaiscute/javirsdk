@@ -1,6 +1,6 @@
     package javirsdk.variable.template;
 
-    import irsdkdef.IRSDKVarType;
+    import javirsdk.irsdkdef.IRSDKVarType;
 
     import java.util.function.BiConsumer;
 
