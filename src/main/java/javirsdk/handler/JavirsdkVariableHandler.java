@@ -1,6 +1,6 @@
 package javirsdk.handler;
 
-import irsdkdef.IRSDKVarHeader;
+import javirsdk.irsdkdef.IRSDKVarHeader;
 import javirsdk.Javirsdk;
 import javirsdk.variable.JavirsdkVariable;
 import javirsdk.variable.JavirsdkVariableStateSnapshot;

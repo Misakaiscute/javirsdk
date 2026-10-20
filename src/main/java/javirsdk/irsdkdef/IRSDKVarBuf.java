@@ -1,4 +1,4 @@
-package irsdkdef;
+package javirsdk.irsdkdef;
 
 import com.sun.jna.Pointer;
 

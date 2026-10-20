@@ -5,9 +5,7 @@ import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.*;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 
-import javirsdk.irsdkdef.IRSDKHeader;
-import javirsdk.irsdkdef.IRSDKVarBuf;
-import javirsdk.irsdkdef.IRSDKVarHeader;
+import javirsdk.irsdkdef.*;
 
 import javirsdk.broadcast.JavirsdkBroadcastMsg;
 import javirsdk.exceptions.JavirsdkIRacingClosingException;

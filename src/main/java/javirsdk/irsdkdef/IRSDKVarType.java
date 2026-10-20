@@ -1,4 +1,4 @@
-package irsdkdef;
+package javirsdk.irsdkdef;
 
 public enum IRSDKVarType {
     IRSDK_CHAR,
