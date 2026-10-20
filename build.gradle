@@ -1,11 +1,12 @@
 plugins {
     id 'eclipse'
     id 'java'
+    id 'maven-publish'
     alias(libs.plugins.kotlin.jvm)
 }
 
 sourceSets {
-    group 'io.github.misakaiscute'
+    group 'dev.misakaiscute'
     version '1.0.0'
     main {
         java.srcDir('src/main/java')
@@ -34,12 +35,6 @@ dependencies {
     testImplementation(platform(libs.junit))
     testImplementation(libs.jupiter)
     testRuntimeOnly(libs.junit.platform)
-    //implementation 'net.java.dev.jna:jna:5.19.1'
-    //implementation 'net.java.dev.jna:jna-platform:5.19.1'
-    //testImplementation platform('org.junit:junit-bom:5.10.0')
-    //testImplementation 'org.junit.jupiter:junit-jupiter'
-    //testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    //implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
 }
 
 configurations {
@@ -67,18 +62,22 @@ tasks.register('scoutVariables', JavaExec) {
     group = 'custom'
     description = 'Scouting variables and transforming them into source code'
 
-    dependsOn 'classes'                       // method call, not setDependsOn { }
+    dependsOn 'classes'
     classpath = sourceSets.utils.runtimeClasspath
     mainClass = 'javirsdk.variable.JavirsdkTelemetryVariableScouter'
 
-    args = ['--flag', 'value']                // property assignment
+    args = ['--flag', 'value']
     standardInput = System.in
     standardOutput = System.out
 }
 
 tasks.register('registerSessionGroup', JavaExec) {
     group = 'custom'
-    description = 'Registers a new session group to another session group. Takes in the name of the new group, and optionally the root to add it to. If no root specified, Uses the default group (SessionRoot).'
+    description =
+        """Registers a new session group to another session group.
+        Takes in the name of the new group, and optionally the root
+        to add it to. If no root specified, Uses the default group
+        (SessionRoot)."""
 
     dependsOn 'classes'
     classpath = sourceSets.utils.runtimeClasspath
@@ -91,7 +90,11 @@ tasks.register('registerSessionGroup', JavaExec) {
 
 tasks.register('registerSessionVariable', JavaExec) {
     group = 'custom'
-    description = 'Registers a variable to be added to to a session group. Takes in the name of the variable (as it appears in the iRacing session string), the type of the variable, and the session group to add it to.'
+    description =
+        """Registers a variable to be added to to a session group.
+        Takes in the name of the variable (as it appears in the
+        iRacing session string), the type of the variable, and the
+        session group to add it to."""
 
     dependsOn 'classes'
     classpath = sourceSets.utils.runtimeClasspath
