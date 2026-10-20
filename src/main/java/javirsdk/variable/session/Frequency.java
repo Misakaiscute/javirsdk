@@ -3,7 +3,7 @@ package javirsdk.variable.session;
 import com.fasterxml.jackson.annotation.*;
 
 public class Frequency {
-    	@JsonProperty("FrequencyNum")
+   	@JsonProperty("FrequencyNum")
 		private int frequencyNum = 0;
 		public int getFrequencyNum() { return frequencyNum; }
 		@JsonProperty("FrequencyName")

@@ -11,7 +11,8 @@ import javirsdk.Javirsdk;
 import javirsdk.variable.SessionRoot;
 
 public final class JavirsdkSessionHandler implements JavirsdkHandler<String>{
-    private static int latestTick = -1;
+    private int latestSelfTick = -1;
+    private static int latestUpdateTick = -1;
     private static SessionRoot latestState = null;
 
     private final String id;
@@ -52,14 +53,18 @@ public final class JavirsdkSessionHandler implements JavirsdkHandler<String>{
 
     @Override
     public void execute() {
-        int javirsdkSessionStringTick = Javirsdk.getInstance().getSessionTick();
-        //Check if the session string was updated
-        if (javirsdkSessionStringTick != JavirsdkSessionHandler.latestTick) {
-            //If it was, we re-parse syncronously
-            JavirsdkSessionHandler.latestTick = javirsdkSessionStringTick;
+        int sdkSessionTick = Javirsdk.getInstance().getSessionTick();
+
+        boolean sessionStringUpdated = sdkSessionTick == JavirsdkSessionHandler.latestUpdateTick;
+        if (sessionStringUpdated) {
+            JavirsdkSessionHandler.latestUpdateTick = sdkSessionTick;
             JavirsdkSessionHandler.parseSessionString(Javirsdk.getInstance().getSessionString());
         }
-        //Lastly, run the user provided handler with the 100% latest session state
-        this.handler.accept(latestState);
+
+        boolean hasRunWithNewData = this.latestSelfTick == JavirsdkSessionHandler.latestUpdateTick;
+        if (!hasRunWithNewData) {
+            this.latestSelfTick = JavirsdkSessionHandler.latestUpdateTick;
+            this.handler.accept(latestState);
+        }
     }
 }
