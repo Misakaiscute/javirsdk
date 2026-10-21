@@ -109,6 +109,9 @@ public class WeekendInfo {
 		@JsonProperty("DCRuleSet")
 		private String dCRuleSet = null;
 		public String getDCRuleSet() { return dCRuleSet; }
+		@JsonProperty("AltAssetTag")
+		private String altAssetTag = null;
+		public String getAltAssetTag() { return altAssetTag; }
 		@JsonProperty("QualifierMustStartRace")
 		private byte qualifierMustStartRace = 0;
 		public boolean getQualifierMustStartRace() { return qualifierMustStartRace == 1; }

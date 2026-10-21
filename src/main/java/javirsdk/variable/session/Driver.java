@@ -112,6 +112,15 @@ public class Driver {
 		@JsonProperty("CarPath")
 		private String carPath = null;
 		public String getCarPath() { return carPath; }
+    @JsonProperty("CarCfg")
+    private int carCfg = -1;
+    public int getCarCfg() { return carCfg; }
+    @JsonProperty("CarCfgName")
+    private String carCfgName = null;
+    public String getCarCfgName() { return carCfgName; }
+    @JsonProperty("CarCfgCustomPaintExt")
+    private int carCfgCustomPaintExt = -1;
+    public int getCarCfgCustomPaintExt() { return carCfgCustomPaintExt; }
 		@JsonProperty("CarIsPaceCar")
 		private byte carIsPaceCar = 0;
 		public boolean getCarIsPaceCar() { return carIsPaceCar == 1; }
