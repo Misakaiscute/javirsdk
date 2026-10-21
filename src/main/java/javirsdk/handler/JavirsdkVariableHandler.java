@@ -101,4 +101,6 @@ public final class JavirsdkVariableHandler implements JavirsdkHandler<JavirsdkVa
         //Feed the updated state to the handler
         handler.accept(stateSnapshot);
     }
+    @Override 
+    public void reset() {}
 }

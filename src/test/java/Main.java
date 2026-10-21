@@ -10,13 +10,13 @@ public class Main {
         JavirsdkVariableHandler varHnd = new JavirsdkVariableHandler.Builder()
             .setId("print_speed")
             .setRequiredVariables(JavirsdkVariable.SPEED)
-            .setHandler((state) -> { System.out.printf("Speed: %.2f", state.getSpeed() * 3.6);} )
+            .setHandler((state) -> { System.out.printf("Speed: %.2f\n", state.getSpeed() * 3.6);} )
             .build();
         sdk.handlerExecutor.bind(varHnd);
 
         JavirsdkSessionHandler sessHnd = new JavirsdkSessionHandler.Builder()
             .setId("print_track_name")
-            .setHandler((state) -> { System.out.printf("Track name: %s", state.getWeekendInfo().getTrackName()); })
+            .setHandler((state) -> { System.out.printf("Track temp: %s\n", state.getWeekendInfo().getTrackAirTemp()); })
             .build();
         sdk.handlerExecutor.bind(sessHnd);
         

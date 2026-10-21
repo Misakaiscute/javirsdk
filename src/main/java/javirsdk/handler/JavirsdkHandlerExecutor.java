@@ -47,9 +47,9 @@ public final class JavirsdkHandlerExecutor {
         }
     }
     /**
-     * Unbinds handlers from executor.
+     * Unbinds handlers from the executor and resets the handler's internal state.
      *
-     * If the last handler is removed, the handler stops executing until a
+     * If the last handler is removed, the handler executor stops executing until a
      * handler is bound again.
      *
      * @param id of handler to unbind 
@@ -59,7 +59,8 @@ public final class JavirsdkHandlerExecutor {
         int item_idx;
         synchronized (entries) {
             item_idx = linkedListFind(entries, (JavirsdkHandler<?> h) -> { return h.getId() == id; });
-            entries.remove(item_idx);
+            var removedHandler = entries.remove(item_idx);
+            removedHandler.reset();
         }
         if (item_idx == -1) {
             throw new IllegalArgumentException("No handler found with id %s.".formatted(id));
