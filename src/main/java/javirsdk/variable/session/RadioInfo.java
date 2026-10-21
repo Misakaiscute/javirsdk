@@ -2,6 +2,7 @@ package javirsdk.variable.session;
 
 import com.fasterxml.jackson.annotation.*;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RadioInfo {
     @JsonProperty("SelectedRadioNum")
 		private int selectedRadioNum = 0;

@@ -2,6 +2,7 @@ package javirsdk.variable.session;
 
 import com.fasterxml.jackson.annotation.*;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Radio {
    	@JsonProperty("RadioNum")
 		private int radioNum = 0;
@@ -16,8 +17,8 @@ public class Radio {
 		private int tunedToFrequencyNum = 0;
 		public int getTunedToFrequencyNum() { return tunedToFrequencyNum; }
 		@JsonProperty("ScanningIsOn")
-		private boolean scanningIsOn = false;
-		public boolean getScanningIsOn() { return scanningIsOn; }
+		private byte scanningIsOn = 0;
+		public boolean getScanningIsOn() { return scanningIsOn == 1; }
 		@JsonProperty("Frequencies")
 		private Frequency[] frequency = null;
 		public Frequency[] getFrequency() { return frequency; }

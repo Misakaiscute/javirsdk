@@ -2,6 +2,7 @@ package javirsdk.variable.session;
 
 import com.fasterxml.jackson.annotation.*;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DriverInfo {
  		@JsonProperty("DriverCarIdx")
 		private int driverCarIdx = 0;
@@ -70,11 +71,11 @@ public class DriverInfo {
 		private String driverSetupLoadTypeName = null;
 		public String getDriverSetupLoadTypeName() { return driverSetupLoadTypeName; }
 		@JsonProperty("DriverSetupIsModified")
-		private boolean driverSetupIsModified = false;
-		public boolean getDriverSetupIsModified() { return driverSetupIsModified; }
+		private byte driverSetupIsModified = 0;
+		public boolean getDriverSetupIsModified() { return driverSetupIsModified == 1; }
 		@JsonProperty("DriverSetupPassedTech")
-		private boolean driverSetupPassedTech = false;
-		public boolean getDriverSetupPassedTech() { return driverSetupPassedTech; }
+		private byte driverSetupPassedTech = 0;
+		public boolean getDriverSetupPassedTech() { return driverSetupPassedTech == 1; }
 		@JsonProperty("DriverIncidentCount")
 		private int driverIncidentCount = 0;
 		public int getDriverIncidentCount() { return driverIncidentCount; }

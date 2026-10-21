@@ -2,6 +2,7 @@ package javirsdk.variable.session;
 
 import com.fasterxml.jackson.annotation.*;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ResultsFastestLap {
     @JsonProperty("CarIdx")
     private int carIdx = 0;

@@ -2,6 +2,7 @@ package javirsdk.variable.session;
 
 import com.fasterxml.jackson.annotation.*;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class WeekendOptions {
    	@JsonProperty("NumStarters")
 		private int numStarters = 0;
@@ -16,8 +17,8 @@ public class WeekendOptions {
 		private String courseCautions = null;
 		public String getCourseCautions() { return courseCautions; }
 		@JsonProperty("StandingStart")
-		private boolean standingStart = false;
-		public boolean getStandingStart() { return standingStart; }
+		private byte standingStart = 0;
+		public boolean getStandingStart() { return standingStart == 1; }
 		@JsonProperty("Restarts")
 		private String restarts = null;
 		public String getRestarts() { return restarts; }
@@ -43,23 +44,23 @@ public class WeekendOptions {
 		private String fogLevel = null;
 		public String getFogLevel() { return fogLevel; }
 		@JsonProperty("Unofficial")
-		private boolean unofficial = false;
-		public boolean getUnofficial() { return unofficial; }
+		private byte unofficial = 0;
+		public boolean getUnofficial() { return unofficial == 1; }
 		@JsonProperty("CommercialMode")
 		private String commercialMode = null;
 		public String getCommercialMode() { return commercialMode; }
 		@JsonProperty("NightMode")
-		private boolean nightMode = false;
-		public boolean getNightMode() { return nightMode; }
+		private String nightMode = null;
+		public String getNightMode() { return nightMode; }
 		@JsonProperty("IsFixedSetup")
-		private boolean isFixedSetup = false;
-		public boolean getIsFixedSetup() { return isFixedSetup; }
+		private byte isFixedSetup = 0;
+		public boolean getIsFixedSetup() { return isFixedSetup == 1; }
 		@JsonProperty("StrictLapsChecking")
 		private String strictLapsChecking = null;
 		public String getStrictLapsChecking() { return strictLapsChecking; }
 		@JsonProperty("HasOpenRegistration")
-		private boolean hasOpenRegistration = false;
-		public boolean getHasOpenRegistration() { return hasOpenRegistration; }
+		private byte hasOpenRegistration = 0;
+		public boolean getHasOpenRegistration() { return hasOpenRegistration == 1; }
 		@JsonProperty("HardcoreLevel")
 		private int hardcoreLevel = 0;
 		public int getHardcoreLevel() { return hardcoreLevel; }

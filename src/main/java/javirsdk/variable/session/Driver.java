@@ -2,6 +2,7 @@ package javirsdk.variable.session;
 
 import com.fasterxml.jackson.annotation.*;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Driver {
     @JsonProperty("CarIdx")
 		private int carIdx = 0;
@@ -85,8 +86,8 @@ public class Driver {
 		private String initials = null;
 		public String getInitials() { return initials; }
 		@JsonProperty("IsSpectator")
-		private boolean isSpectator = false;
-		public boolean getIsSpectator() { return isSpectator; }
+		private byte isSpectator = 0;
+		public boolean getIsSpectator() { return isSpectator == 1; }
 		@JsonProperty("LicLevel")
 		private int licLevel = 0;
 		public int getLicLevel() { return licLevel; }
@@ -112,11 +113,11 @@ public class Driver {
 		private String carPath = null;
 		public String getCarPath() { return carPath; }
 		@JsonProperty("CarIsPaceCar")
-		private boolean carIsPaceCar = false;
-		public boolean getCarIsPaceCar() { return carIsPaceCar; }
+		private byte carIsPaceCar = 0;
+		public boolean getCarIsPaceCar() { return carIsPaceCar == 1; }
 		@JsonProperty("CarIsAI")
-		private boolean carIsAI = false;
-		public boolean getCarIsAI() { return carIsAI; }
+		private byte carIsAI = 0;
+		public boolean getCarIsAI() { return carIsAI == 1; }
 		@JsonProperty("CarScreenName")
 		private String carScreenName = null;
 		public String getCarScreenName() { return carScreenName; }

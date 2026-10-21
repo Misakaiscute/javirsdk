@@ -2,6 +2,7 @@ package javirsdk.variable.session;
 
 import com.fasterxml.jackson.annotation.*;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class WeekendInfo {
     @JsonProperty("TrackName")
 		private String trackName = null;
@@ -88,8 +89,8 @@ public class WeekendInfo {
 		private int leagueID = 0;
 		public int getLeagueID() { return leagueID; }
 		@JsonProperty("Official")
-		private boolean official = false;
-		public boolean getOfficial() { return official; }
+		private byte official = 0;
+		public boolean getOfficial() { return official == 1; }
 		@JsonProperty("RaceWeek")
 		private int raceWeek = 0;
 		public int getRaceWeek() { return raceWeek; }
@@ -103,14 +104,14 @@ public class WeekendInfo {
 		private String simMode = null;
 		public String getSimMode() { return simMode; }
 		@JsonProperty("TeamRacing")
-		private boolean teamRacing = false;
-		public boolean getTeamRacing() { return teamRacing; }
+		private byte teamRacing = 0;
+		public boolean getTeamRacing() { return teamRacing == 1; }
 		@JsonProperty("DCRuleSet")
 		private String dCRuleSet = null;
 		public String getDCRuleSet() { return dCRuleSet; }
 		@JsonProperty("QualifierMustStartRace")
-		private boolean qualifierMustStartRace = false;
-		public boolean getQualifierMustStartRace() { return qualifierMustStartRace; }
+		private byte qualifierMustStartRace = 0;
+		public boolean getQualifierMustStartRace() { return qualifierMustStartRace == 1; }
 		@JsonProperty("NumCarClasses")
 		private int numCarClasses = 0;
 		public int getNumCarClasses() { return numCarClasses; }

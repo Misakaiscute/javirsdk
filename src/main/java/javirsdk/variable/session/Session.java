@@ -2,6 +2,7 @@ package javirsdk.variable.session;
 
 import com.fasterxml.jackson.annotation.*;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Session {
    	@JsonProperty("SessionNum")
 		private int sessionNum = 0;
@@ -40,7 +41,7 @@ public class Session {
 		private int resultsLapsComplete = 0;
 		public int getResultsLapsComplete() { return resultsLapsComplete; }
 		@JsonProperty("ResultsOfficial")
-		private boolean resultsOfficial = false;
-		public boolean getResultsOfficial() { return resultsOfficial; }
+		private byte resultsOfficial = 0;
+		public boolean getResultsOfficial() { return resultsOfficial == 1; }
 		//$...    
 }

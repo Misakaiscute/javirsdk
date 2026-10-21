@@ -2,6 +2,7 @@ package javirsdk.variable.session;
 
 import com.fasterxml.jackson.annotation.*;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Frequency {
    	@JsonProperty("FrequencyNum")
 		private int frequencyNum = 0;
@@ -22,19 +23,19 @@ public class Frequency {
 		private int clubID = 0;
 		public int getClubID() { return clubID; }
 		@JsonProperty("CanScan")
-		private boolean canScan = false;
-		public boolean getCanScan() { return canScan; }
+		private byte canScan = 0;
+		public boolean getCanScan() { return canScan == 1; }
 		@JsonProperty("CanSquawk")
-		private boolean canSquawk = false;
-		public boolean getCanSquawk() { return canSquawk; }
+		private byte canSquawk = 0;
+		public boolean getCanSquawk() { return canSquawk == 1; }
 		@JsonProperty("Muted")
-		private boolean muted = false;
-		public boolean getMuted() { return muted; }
+		private byte muted = 0;
+		public boolean getMuted() { return muted == 1; }
 		@JsonProperty("IsMutable")
-		private boolean isMutable = false;
-		public boolean getIsMutable() { return isMutable; }
+		private byte isMutable = 0;
+		public boolean getIsMutable() { return isMutable == 1; }
 		@JsonProperty("IsDeletable")
-		private boolean isDeletable = false;
-		public boolean getIsDeletable() { return isDeletable; }
+		private byte isDeletable = 0;
+		public boolean getIsDeletable() { return isDeletable == 1; }
 		//$...    
 }

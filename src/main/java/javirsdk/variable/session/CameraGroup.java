@@ -2,6 +2,7 @@ package javirsdk.variable.session;
 
 import com.fasterxml.jackson.annotation.*;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CameraGroup {
 		@JsonProperty("Cameras")
 		private Camera[] cameras = null;
