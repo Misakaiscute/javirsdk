@@ -16,7 +16,7 @@ public class Main {
 
         JavirsdkSessionHandler sessHnd = new JavirsdkSessionHandler.Builder()
             .setId("print_track_name")
-            .setHandler((state) -> { System.out.println(state.getWeekendInfo().getTrackName()); })
+            .setHandler((state) -> { System.out.printf("Track name: %s", state.getWeekendInfo().getTrackName()); })
             .build();
         sdk.handlerExecutor.bind(sessHnd);
         
