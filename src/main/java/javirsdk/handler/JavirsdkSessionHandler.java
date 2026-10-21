@@ -45,8 +45,11 @@ public final class JavirsdkSessionHandler implements JavirsdkHandler<String>{
     private static void parseSessionString(String sessionStr) {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         try {
-            latestState = mapper.readValue(sessionStr, SessionRoot.class);
+            sessionStr = sessionStr.split("CarSetup:")[0];
+            JavirsdkSessionHandler.latestState = mapper.readValue(sessionStr, SessionRoot.class);
         } catch (JsonProcessingException e) {
+            System.out.printf("Runtime e: %s", e.getMessage());
+            System.out.printf("Session string: %s", sessionStr);
             throw new RuntimeJsonMappingException(e.getMessage());
         }
     }
@@ -55,7 +58,7 @@ public final class JavirsdkSessionHandler implements JavirsdkHandler<String>{
     public void execute() {
         int sdkSessionTick = Javirsdk.getInstance().getSessionTick();
 
-        boolean sessionStringUpdated = sdkSessionTick == JavirsdkSessionHandler.latestUpdateTick;
+        boolean sessionStringUpdated = sdkSessionTick != JavirsdkSessionHandler.latestUpdateTick;
         if (sessionStringUpdated) {
             JavirsdkSessionHandler.latestUpdateTick = sdkSessionTick;
             JavirsdkSessionHandler.parseSessionString(Javirsdk.getInstance().getSessionString());
@@ -64,7 +67,7 @@ public final class JavirsdkSessionHandler implements JavirsdkHandler<String>{
         boolean hasRunWithNewData = this.latestSelfTick == JavirsdkSessionHandler.latestUpdateTick;
         if (!hasRunWithNewData) {
             this.latestSelfTick = JavirsdkSessionHandler.latestUpdateTick;
-            this.handler.accept(latestState);
+            this.handler.accept(JavirsdkSessionHandler.latestState);
         }
     }
 }
