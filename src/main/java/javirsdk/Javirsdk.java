@@ -13,6 +13,8 @@ import javirsdk.exceptions.JavirsdkIRacingNotRunningException;
 import javirsdk.handler.JavirsdkHandlerExecutor;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.function.Consumer;
@@ -302,8 +304,9 @@ public final class Javirsdk {
 
     //Session info
     public String getSessionString() {
-        var sessionString = buf.getCharArray(irsdkHeader.getSessionInfoOffset(), irsdkHeader.getSessionInfoLen());
-        return new String(sessionString);
+        byte[] rawBuf = buf.getByteArray(irsdkHeader.getSessionInfoOffset(), irsdkHeader.getSessionInfoLen());
+        String sessionStringDecoded  = new String(rawBuf, StandardCharsets.UTF_8);
+        return new String(sessionStringDecoded);
     }
     public int getSessionTick() {
         return irsdkHeader.getSessionInfoUpdate();
