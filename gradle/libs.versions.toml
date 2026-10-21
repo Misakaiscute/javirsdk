@@ -5,8 +5,6 @@ jackson = "2.22.0"
 jackson-annotations = "2.22"
 jackson-ext-yaml = "2.14.2"
 
-kotlin-jvm = "2.2.20"
-
 [libraries]
 jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
 jna-platform = { group = "net.java.dev.jna", name = "jna-platform", version.ref = "jna" }
@@ -19,4 +17,3 @@ jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-an
 jackson-ext-yaml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version.ref = "jackson-ext-yaml" }
 
 [plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-jvm" }

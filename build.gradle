@@ -2,12 +2,19 @@ plugins {
     id 'eclipse'
     id 'java-library'
     id 'maven-publish'
-    alias(libs.plugins.kotlin.jvm)
+    //alias(libs.plugins.kotlin.jvm)
+}
+
+group = 'dev.misakaiscute'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 sourceSets {
-    group 'dev.misakaiscute'
-    version '1.0.0'
     main {
         java.srcDir('src/main/java')
     }
@@ -43,10 +50,7 @@ configurations {
 
 test {
     useJUnitPlatform()
-}
-
-kotlin {
-    jvmToolchain(21)
+    failOnNoDiscoveredTests = false
 }
 
 tasks.register('runTestMain', JavaExec) {
