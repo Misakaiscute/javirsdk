@@ -1,1 +1,6 @@
 org.gradle.java.home=path/to/jdk/(25 unsupported for gradle as of 2026.10.21.)
+
+mavenCentralUsername=bober
+mavenCentralPassword=chomik
+signingInMemoryKey=gpgkey
+signingInMemoryKeyPassword=gpgpassphrase
