@@ -10,12 +10,12 @@ public class VideoCaptureMsg extends JavirsdkBroadcastMsg {
     }
 
     public enum VideoCaptureCommand {
-        TriggerScreenShot(0), // save a screenshot to disk
-        StartVideoCapture(1), // start capturing video
-        EndVideoCapture(2), // stop capturing video
-        ToggleVideoCapture(3), // toggle video capture on/off
-        ShowVideoTimer(4), // show video timer in upper left corner of display
-        HideVideoTimer(5); // hide video timer
+        TRIGGER_SCREENSHOT(0), // save a screenshot to disk
+        START_VIDEO_CAPTURE(1), // start capturing video
+        END_VIDEO_CAPTURE(2), // stop capturing video
+        TOGGLE_VIDEO_CAPTURE(3), // toggle video capture on/off
+        SHOW_VIDEO_TIMER(4), // show video timer in upper left corner of display
+        HIDE_VIDEO_TIMER(5); // hide video timer
 
         private final int order;
         VideoCaptureCommand(int order) {

@@ -10,9 +10,9 @@ public class ReplaySetPlayPositionMsg extends JavirsdkBroadcastMsg {
     }
 
     public enum ReplaySetPlayPositionCommand {
-        Begin(0),
-        Current(1),
-        End(2);
+        BEGIN(0),
+        CURRENT(1),
+        END(2);
 
         private final int order;
         ReplaySetPlayPositionCommand(int order) {

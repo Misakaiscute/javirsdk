@@ -10,19 +10,19 @@ public class ReplaySetPlaySpeedMsg extends JavirsdkBroadcastMsg {
         return 3;
     }
     public enum ReplaySpeedMultiplierCommand {
-        Backward16X(-16),
-        Backward12X(-12),
-        Backward8X(-8),
-        Backward4X(-4),
-        Backward2X(-2),
-        BackwardNormal(-1),
-        Pause(0),
-        ForwardNormal(1),
-        Forward2X(2),
-        Forward4X(4),
-        Forward8X(8),
-        Forward12X(12),
-        Forward16X(16);
+        BACKWARD_16X(-16),
+        BACKWARD_12X(-12),
+        BACKWARD_8X(-8),
+        BACKWARD_4X(-4),
+        BACKWARD_2X(-2),
+        BACKWARD_1X(-1),
+        PAUSE(0),
+        FORWARD_1X(1),
+        FORWARD_2X(2),
+        FORWARD_4X(4),
+        FORWARD_8X(8),
+        FORWARD_12X(12),
+        FORWARD_16X(16);
 
         private final int value;
         ReplaySpeedMultiplierCommand(int value) {

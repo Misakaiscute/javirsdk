@@ -11,14 +11,14 @@ public class PitCommandMsg extends JavirsdkBroadcastMsg {
     }
 
     public enum PitCommandCommand {
-        UncheckAll(0), // Clear all pit checkboxes
-        WindshieldTearoff(1), // Clean the windshield, using one tear off
-        UncheckTyre(7), // Clear tire pit checkboxes
-        FastRepair(8), // Request a fast repair
-        UncheckWindshieldTearoff(9), // Uncheck Clean the windshield checkbox
-        UncheckFastRepair(10), // Uncheck request a fast repair
-        UncheckFuel(11), // Uncheck add fuel
-        ChangeTyreCompound(12); // Change tire compound
+        UNCHECK_ALL(0), // Clear all pit checkboxes
+        WINDSHIELD_TEAROFF(1), // Clean the windshield, using one tear off
+        UNCHECK_TYRE(7), // Clear tire pit checkboxes
+        FAST_REPAIR(8), // Request a fast repair
+        UNCHECK_WINDSHIELD_TEAROFF(9), // Uncheck Clean the windshield checkbox
+        UNCHECK_FAST_REPAIR(10), // Uncheck request a fast repair
+        UNCHECK_BEGIN_REFUEL(11), // Uncheck add fuel
+        CHANGE_TYRE_COMPOUND(12); // Change tire compound
 
         private final int order;
         PitCommandCommand(int order) {
@@ -39,7 +39,7 @@ public class PitCommandMsg extends JavirsdkBroadcastMsg {
     }
 
     public enum StartRefuelCommand {
-        Fuel(2); // Add fuel, optionally specify the amount to add in liters or pass '0' to use existing amount
+        FUEL(2); // Add fuel, optionally specify the amount to add in liters or pass '0' to use existing amount
 
         private final int order;
         StartRefuelCommand(int order) {

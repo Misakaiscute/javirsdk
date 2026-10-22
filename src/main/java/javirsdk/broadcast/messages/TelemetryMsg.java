@@ -10,9 +10,9 @@ public class TelemetryMsg extends JavirsdkBroadcastMsg {
     }
 
     public enum TelemetryCommand {
-        Stop(0), // Turn telemetry recording off
-        Start(1), // Turn telemetry recording on
-        Restart(2); // Write current file to disk and start a new one
+        STOP_RECORDING(0), // Turn telemetry recording off
+        START_RECORDING(1), // Turn telemetry recording on
+        RESTART_RECORDING(2); // Write current file to disk and start a new one
 
         private final int order;
         TelemetryCommand(int order) {

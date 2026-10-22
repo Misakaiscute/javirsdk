@@ -9,9 +9,9 @@ public class CamSwitchToCarPosMsg extends JavirsdkBroadcastMsg {
         return 0;
     }
     public enum FocusOnCommand {
-        Incident(-3),
-        Leader(-2),
-        Exiting(-1);
+        INCIDENT(-3),
+        LEADER(-2),
+        EXITING(-1);
 
         private final int order;
         FocusOnCommand(int order) {

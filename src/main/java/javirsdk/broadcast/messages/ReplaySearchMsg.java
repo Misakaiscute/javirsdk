@@ -10,16 +10,16 @@ public class ReplaySearchMsg extends JavirsdkBroadcastMsg {
     }
 
     public enum ReplaySearchCommand {
-        ToStart(0),
-        ToEnd(1),
-        PrevSession(2),
-        NextSession(3),
-        PrevLap(4),
-        NextLap(5),
-        PrevFrame(6),
-        NextFrame(7),
-        PrevIncident(8),
-        NextIncident(9);
+        TO_START(0),
+        TO_END(1),
+        PREV_SESSION(2),
+        NEXT_SESSION(3),
+        PREV_LAP(4),
+        NEXT_LAP(5),
+        PREV_FRAME(6),
+        NEXT_FRAME(7),
+        PREV_INCIDENT(8),
+        NEXT_INCIDENT(9);
 
         private final int order;
         ReplaySearchCommand(int order) {

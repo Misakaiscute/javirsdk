@@ -11,9 +11,9 @@ public class ChatCommandMsg extends JavirsdkBroadcastMsg {
 
     private final int MACRO_ORDER = 0;
     public enum ChatCommandCommand {
-        BeginChat(1), // Open up a new chat window
-        Reply(2), // Reply to the last private chat message
-        Cancel(3); // Close out this chat window
+        OPEN_CHAT(1), // Open up a new chat window
+        REPLY(2), // Reply to the last private chat message
+        CLOSE_CHAT(3); // Close out this chat window
 
         private final int order;
         ChatCommandCommand(int order) {

@@ -10,7 +10,7 @@ public class ReplaySetStateMsg extends JavirsdkBroadcastMsg {
     }
 
     public enum ReplaySetStateCommand {
-        EraseTape(0);
+        ERASE_TAPE(0);
 
         private final int order;
         ReplaySetStateCommand(int order) {

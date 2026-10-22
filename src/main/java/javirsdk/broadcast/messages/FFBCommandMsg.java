@@ -11,7 +11,7 @@ public class FFBCommandMsg extends JavirsdkBroadcastMsg {
     }
 
     public enum FFBCommandCommand {
-        SetMaxForce(0);
+        SET_MAX_FORCE(0);
 
         private final int order;
         FFBCommandCommand(int order) {

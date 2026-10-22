@@ -9,13 +9,13 @@ public class CamSetStateMsg extends JavirsdkBroadcastMsg {
         return 2;
     }
     public enum CamSetStateCommand {
-        CamToolActive(0x0004),
-        UIHidden(0x0008),
-        UseAutoShotSelection(0x0010),
-        UseTemporaryEdits(0x0020),
-        UseKeyAcceleration(0x0040),
-        UseKey10xAcceleration(0x0080),
-        UseMouseAimMode(0x0100);
+        ACTIVATE_CAM_TOOL(0x0004),
+        HIDE_UI(0x0008),
+        USE_AUTO_SHOT_SELECTION(0x0010),
+        USE_TEMPORARY_EDITS(0x0020),
+        USE_KEY_ACCELERATION(0x0040),
+        USE_KEY_TENX_ACCELERATION(0x0080),
+        USE_MOUSE_AIM_MODE(0x0100);
 
         private final int value;
         CamSetStateCommand(int value) {
