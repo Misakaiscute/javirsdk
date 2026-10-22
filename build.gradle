@@ -1,22 +1,110 @@
 plugins {
-    id 'java'
+    id 'eclipse'
+    id 'java-library'
+    id 'maven-publish'
+    //alias(libs.plugins.kotlin.jvm)
 }
 
-group = 'com.example'
-version = '1.0-SNAPSHOT'
+group = 'dev.misakaiscute'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+sourceSets {
+    main {
+        java.srcDir('src/main/java')
+    }
+    test {
+        java.srcDir('src/test/java')
+    }
+    create('utils') {
+        java.srcDir('src/utils/java')
+        runtimeClasspath += sourceSets.main.output
+        compileClasspath += sourceSets.main.output
+    }
+}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation 'net.java.dev.jna:jna:5.19.1'
-    implementation 'net.java.dev.jna:jna-platform:5.19.1'
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation(libs.jna)
+    implementation(libs.jna.platform)
+    implementation(libs.jackson.core)
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.annotations)
+    implementation(libs.jackson.ext.yaml)
+    testImplementation(platform(libs.junit))
+    testImplementation(libs.jupiter)
+    testRuntimeOnly(libs.junit.platform)
+}
+
+configurations {
+    utilsImplementation.extendsFrom(implementation)
 }
 
 test {
     useJUnitPlatform()
+    failOnNoDiscoveredTests = false
+}
+
+tasks.register('runTestMain', JavaExec) {
+    group = 'Execution'
+    description = "Run a manual testing environment."
+    
+    classpath = sourceSets.test.runtimeClasspath
+    
+    mainClass = "Main"
+}
+
+tasks.register('scoutVariables', JavaExec) {
+    group = 'custom'
+    description = 'Scouting variables and transforming them into source code'
+
+    dependsOn 'classes'
+    classpath = sourceSets.utils.runtimeClasspath
+    mainClass = 'javirsdk.variable.JavirsdkTelemetryVariableScouter'
+
+    args = ['--flag', 'value']
+    standardInput = System.in
+    standardOutput = System.out
+}
+
+tasks.register('registerSessionGroup', JavaExec) {
+    group = 'custom'
+    description =
+        """Registers a new session group to another session group.
+        Takes in the name of the new group, and optionally the root
+        to add it to. If no root specified, Uses the default group
+        (SessionRoot)."""
+
+    dependsOn 'classes'
+    classpath = sourceSets.utils.runtimeClasspath
+    mainClass = 'javirsdk.variable.JavirsdkSessionGroupRegister'
+
+    args = ['--flag', 'value']
+    standardInput = System.in
+    standardOutput = System.out
+}
+
+tasks.register('registerSessionVariable', JavaExec) {
+    group = 'custom'
+    description =
+        """Registers a variable to be added to to a session group.
+        Takes in the name of the variable (as it appears in the
+        iRacing session string), the type of the variable, and the
+        session group to add it to."""
+
+    dependsOn 'classes'
+    classpath = sourceSets.utils.runtimeClasspath
+    mainClass = 'javirsdk.variable.JavirsdkSessionVariableRegister'
+
+    args = ['--flag', 'value']
+    standardInput = System.in
+    standardOutput = System.out
 }
