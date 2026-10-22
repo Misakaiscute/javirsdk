@@ -1,42 +1,45 @@
 plugins {
     id 'eclipse'
     id 'java-library'
-    id 'maven-publish'
+    id 'com.vanniktech.maven.publish' version '0.35.0'
 }
 
 group = 'dev.misakaiscute'
 version = '0.0.1'
 
-publishing {
-    publications {
-        publishMaven(MavenPublication) {
-            from components.java
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
 
-            pom {
-                name = 'Javirsdk'
-                description = 'iRacing sdk wrapper and extension for the JVM'
-                url = 'https://github.com/Misakaiscute/javirsdk'
+    coordinates(
+        project.group.toString(),
+        project.name,
+        project.version.toString()
+    )
 
-                licenses {
-                    license {
-                        name = 'Apache License, 2.0'
-                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
+    pom {
+        name = 'Javirsdk'
+        description = 'iRacing sdk wrapper and extension for the JVM'
+        url = 'https://github.com/Misakaiscute/javirsdk'
 
-                developers {
-                    developer {
-                        id = 'misakaiscute'
-                        name = 'Hunor Horchy'
-                    }
-                }
-
-                scm {
-                    connection = 'scm:git:https://github.com/Misakaiscute/javirsdk.git'
-                    url = 'https://github.com/Misakaiscute/javirsdk'
-                    tag = 'HEAD'
-                }
+        licenses {
+            license {
+                name = 'Apache License, 2.0'
+                url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
             }
+        }
+
+        developers {
+            developer {
+                id = 'misakaiscute'
+                name = 'Hunor Horchy'
+            }
+        }
+
+        scm {
+            connection = 'scm:git:https://github.com/Misakaiscute/javirsdk.git'
+            url = 'https://github.com/Misakaiscute/javirsdk'
+            tag = 'HEAD'
         }
     }
 }
@@ -48,12 +51,6 @@ java {
 }
 
 sourceSets {
-    main {
-        java.srcDir('src/main/java')
-    }
-    test {
-        java.srcDir('src/test/java')
-    }
     create('utils') {
         java.srcDir('src/utils/java')
         runtimeClasspath += sourceSets.main.output
