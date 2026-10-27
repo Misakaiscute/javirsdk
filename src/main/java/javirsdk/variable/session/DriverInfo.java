@@ -79,5 +79,8 @@ public class DriverInfo {
 		@JsonProperty("DriverIncidentCount")
 		private int driverIncidentCount = 0;
 		public int getDriverIncidentCount() { return driverIncidentCount; }
-		//$...    
+		@JsonProperty("Drivers")
+		private Driver[] drivers = null;
+		public Driver[] getDrivers() { return drivers; }
+    //$...    
 }
