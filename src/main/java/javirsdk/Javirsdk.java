@@ -13,7 +13,6 @@ import javirsdk.exceptions.JavirsdkIRacingNotRunningException;
 import javirsdk.handler.JavirsdkHandlerExecutor;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -310,5 +309,8 @@ public final class Javirsdk {
     }
     public int getSessionTick() {
         return irsdkHeader.getSessionInfoUpdate();
+    }
+    public int getIRSDKTickRateMs() {
+        return irsdkHeader.getTickRateMs();
     }
 }
