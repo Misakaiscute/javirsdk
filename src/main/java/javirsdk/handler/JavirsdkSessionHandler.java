@@ -48,7 +48,6 @@ public final class JavirsdkSessionHandler implements JavirsdkHandler<String>{
             sessionStr = sessionStr.split("\0")[0];
             JavirsdkSessionHandler.latestState = mapper.readValue(sessionStr, SessionRoot.class);
         } catch (JsonProcessingException e) {
-            //System.out.printf("Runtime e: %s", e.getMessage());
             throw new RuntimeJsonMappingException(e.getMessage());
         }
     }
@@ -64,7 +63,6 @@ public final class JavirsdkSessionHandler implements JavirsdkHandler<String>{
     public void execute() {
         int sdkSessionTick = Javirsdk.getInstance().getSessionTick();
 
-        //System.out.printf("Session handler: %d, sdk tick: %d", JavirsdkSessionHandler.latestUpdateTick, sdkSessionTick);
         boolean sessionStringUpdated = sdkSessionTick != JavirsdkSessionHandler.latestUpdateTick;
         if (sessionStringUpdated) {
             JavirsdkSessionHandler.latestUpdateTick = sdkSessionTick;
