@@ -9,19 +9,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.function.Consumer;
 
-public final class JavirsdkVariableHandler implements JavirsdkHandler<JavirsdkVariableStateSnapshot> {
-    private final String id;
-    @Override
-    public String getId() {
-        return this.id;
-    }
+public final class JavirsdkVariableHandler extends JavirsdkHandler<JavirsdkVariableStateSnapshot> {
     private final JavirsdkVariableStateSnapshot stateSnapshot;
-    private final Consumer<JavirsdkVariableStateSnapshot> handler;
     private final HashSet<JavirsdkVariable> variables;
 
-    private JavirsdkVariableHandler(String id, Consumer<JavirsdkVariableStateSnapshot> handler, HashSet<JavirsdkVariable> reqVars) {
-        this.id = id;
-        this.handler = handler;
+    private JavirsdkVariableHandler(String id, int timeoutMs, int priority, Consumer<JavirsdkVariableStateSnapshot> handler, HashSet<JavirsdkVariable> reqVars) {
+        super(id, timeoutMs, priority, handler);
         this.variables = reqVars;
 
         JavirsdkVariableStateSnapshot.Builder builder = new JavirsdkVariableStateSnapshot.Builder();
@@ -29,25 +22,18 @@ public final class JavirsdkVariableHandler implements JavirsdkHandler<JavirsdkVa
         this.stateSnapshot = builder.build();
     }
 
-    public static final class Builder {
-        private String hId;
-        public Builder setId(String hId) {
-            this.hId = hId;
-            return this;
-        }
-        private Consumer<JavirsdkVariableStateSnapshot> hHandler;
-        public Builder setHandler(Consumer<JavirsdkVariableStateSnapshot> handler) {
-            this.hHandler = handler;
-            return this;
-        }
+    public static final class Builder extends JavirsdkHandler.Builder<Builder, JavirsdkVariableHandler, JavirsdkVariableStateSnapshot> {
+        @Override
+        protected Builder self() { return this; }
+
         private HashSet<JavirsdkVariable> hVariables = new HashSet<>();
         public Builder setRequiredVariables(JavirsdkVariable ... reqVars) {
             this.hVariables.addAll(Arrays.asList(reqVars));
             return this;
         }
-
+        @Override 
         public JavirsdkVariableHandler build() {
-            return new JavirsdkVariableHandler(hId, hHandler, hVariables);
+            return new JavirsdkVariableHandler(hId, hTimeoutMs, hPriority, hHandler, hVariables);
         }
     }
 
@@ -95,12 +81,10 @@ public final class JavirsdkVariableHandler implements JavirsdkHandler<JavirsdkVa
         });
     }
     @Override
-    public void execute() {
+    public void executeBody() {
         //Update the state with the fresh data
         updateVariables();
         //Feed the updated state to the handler
         handler.accept(stateSnapshot);
     }
-    @Override 
-    public void reset() {}
 }

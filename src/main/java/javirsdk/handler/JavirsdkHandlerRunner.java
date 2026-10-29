@@ -4,10 +4,10 @@ import javirsdk.Javirsdk;
 import javirsdk.exceptions.JavirsdkIRacingClosingException;
 import javirsdk.exceptions.JavirsdkIRacingNotRunningException;
 
-import java.util.LinkedList;
+import java.util.List;
 
 public record JavirsdkHandlerRunner (
-    LinkedList<JavirsdkHandler<?>> handlers
+    List<JavirsdkHandler<?>> handlers
 ) implements Runnable {
     @Override
     public void run() {

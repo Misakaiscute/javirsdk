@@ -3,13 +3,14 @@ package javirsdk.handler;
 import javirsdk.Javirsdk;
 import javirsdk.exceptions.JavirsdkIRacingNotRunningException;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 
 public final class JavirsdkHandlerExecutor {
-    private final LinkedList<JavirsdkHandler<?>> entries = new LinkedList<>();
+    private final List<JavirsdkHandler<?>> entries = new ArrayList<>();
     /**
      * @return true if there's one or more handlers bound
      */
@@ -18,9 +19,12 @@ public final class JavirsdkHandlerExecutor {
     }
     private final JavirsdkHandlerRunner runner = new JavirsdkHandlerRunner(entries);
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
-
     /**
      * Binds a new handler to be run when iRacing writes to its buffer.
+     *
+     * On binding, it appends the handler to the rest based on its priority.
+     * When more than one handlers have the same priority, the handlers will be executed in order of binding.
+     * All handlers have a priority of 0 by default. The higher the priority, the earlier they are executed.
      *
      * If Javirsdk is connected, but no handlers were bound on connection to IRacing,
      * bounding a handler will start the executor on the fly, and begins to run the 
@@ -33,17 +37,20 @@ public final class JavirsdkHandlerExecutor {
         if (entries.contains(handler)) {
             throw new IllegalArgumentException("Handler id already in use.");
         }
-        if (entries.isEmpty()) {
-            synchronized (entries) {
+
+        synchronized (entries) {
+            if (entries.isEmpty()) {
                 entries.add(handler);
+            } else {
+                int idxToAdd = listFind(entries, (JavirsdkHandler<?> h) -> { return h.getPriority() < handler.getPriority(); });
+                if (idxToAdd == -1) {
+                    entries.addLast(handler);
+                }
+                entries.add(idxToAdd, handler);
             }
-            if (Javirsdk.getInstance().isConnected()) {
-                executor.execute(runner);
-            }
-        } else {
-            synchronized (entries) {
-                entries.add(handler);
-            }
+        }
+        if (Javirsdk.getInstance().isConnected()) {
+            executor.execute(runner);
         }
     }
     /**
@@ -58,7 +65,7 @@ public final class JavirsdkHandlerExecutor {
     public void unbind(String id) throws IllegalArgumentException {
         int item_idx;
         synchronized (entries) {
-            item_idx = linkedListFind(entries, (JavirsdkHandler<?> h) -> { return h.getId() == id; });
+            item_idx = listFind(entries, (JavirsdkHandler<?> h) -> { return h.getId() == id; });
             var removedHandler = entries.remove(item_idx);
             removedHandler.reset();
         }
@@ -66,14 +73,15 @@ public final class JavirsdkHandlerExecutor {
             throw new IllegalArgumentException("No handler found with id %s.".formatted(id));
         } 
     }
-    private <T> int linkedListFind(LinkedList<T> list, Predicate<T> cond) {
-        int idx = -1;
+    private <T> int listFind(List<T> list, Predicate<T> cond) {
+        int idx = 0;
         for (var item : list) {
             if (cond.test(item)) {
                 return idx; 
             }
+            ++idx;
         }
-        return idx;
+        return -1;
     }
     /**
      * Start running all the bound handlers, if Javirsdk is connected.
