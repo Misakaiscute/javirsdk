@@ -43,12 +43,12 @@ public class Driver {
 		@JsonProperty("CarClassEstLapTime")
 		private float carClassEstLapTime = 0f;
 		public float getCarClassEstLapTime() { return carClassEstLapTime; }
-		@JsonProperty("ClubID")
-		private int clubID = 0;
-		public int getClubID() { return clubID; }
+		@JsonProperty("FlairID")
+		private int flairID = 0;
+		public int getFlairID() { return flairID; }
 		@JsonProperty("ClubName")
-		private String clubName = null;
-		public String getClubName() { return clubName; }
+		private String flairName = null;
+		public String getflairName() { return flairName; }
 		@JsonProperty("DivisionID")
 		private int divisionID = 0;
 		public int getDivisionID() { return divisionID; }
