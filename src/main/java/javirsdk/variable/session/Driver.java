@@ -46,9 +46,9 @@ public class Driver {
 		@JsonProperty("FlairID")
 		private int flairID = 0;
 		public int getFlairID() { return flairID; }
-		@JsonProperty("ClubName")
+		@JsonProperty("FlairName")
 		private String flairName = null;
-		public String getflairName() { return flairName; }
+		public String getFlairName() { return flairName; }
 		@JsonProperty("DivisionID")
 		private int divisionID = 0;
 		public int getDivisionID() { return divisionID; }
